@@ -1,5 +1,5 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
-import { articleExtensions } from "../tiptap";
+import { articleExtensions } from "../../../../utils/tiptap";
 
 // Constrained rich-text body editor. Only semantic marks; no design controls.
 export function ArticleBody({

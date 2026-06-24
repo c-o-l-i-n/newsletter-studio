@@ -1,71 +1,4 @@
-// Format definitions + imposition for the spike.
-//
-// A Format paginates content into PANEL-sized logical pages, then arranges
-// those panels onto physical letter SHEETS so that, once printed (duplex) and
-// folded, they read in order. Reading order != print order: that rearrangement
-// is "imposition", and it is the riskiest thing this spike exists to prove.
-//
-// Two formats are implemented:
-//   - stapled-portrait: identity imposition (panel == sheet == letter portrait)
-//   - trifold:          real imposition (6 panels -> 2 landscape sheets, duplex)
-
-export type FormatId =
-  | "stapled-portrait"
-  | "stapled-landscape"
-  | "trifold"
-  | "bifold"
-  | "booklet";
-
-export interface Slot {
-  /** index into the paginated panels array, or null for a blank panel */
-  panelIndex: number | null;
-  leftIn: number;
-  topIn: number;
-  widthIn: number;
-  heightIn: number;
-  /** rotate 180deg for duplex back-side correction */
-  rotate180?: boolean;
-  /** reading-order number to show on the panel badge (1-based) */
-  readingNo?: number | null;
-}
-
-export interface Sheet {
-  label: string;
-  widthIn: number;
-  heightIn: number;
-  slots: Slot[];
-  /** x positions (inches) of vertical fold lines, for on-paper guides */
-  foldGuidesX: number[];
-}
-
-export interface ImposeOptions {
-  /** reverse the column order of the back sheet (short-edge duplex) */
-  backReversed: boolean;
-  /** rotate back-sheet panels 180deg (long-edge duplex) */
-  rotateBack: boolean;
-}
-
-export interface FormatDef {
-  id: FormatId;
-  label: string;
-  blurb: string;
-  // pagination (panel) geometry
-  pageWidthIn: number;
-  pageHeightIn: number;
-  pageMarginIn: number;
-  columns: number;
-  // physical sheet geometry
-  sheetWidthIn: number;
-  sheetHeightIn: number;
-  /** fixed panel capacity, or null for unbounded (grows by adding sheets) */
-  capacity: number | null;
-  /** true if the format needs duplex + imposition (shows the duplex toggles) */
-  duplex: boolean;
-  impose(pageCount: number, opts: ImposeOptions): {
-    sheets: Sheet[];
-    oversetPages: number;
-  };
-}
+import type { FormatDef, FormatId, ImposeOptions, Slot } from "../types/formats";
 
 const LETTER_LONG = 11;
 const LETTER_SHORT = 8.5;
@@ -107,7 +40,7 @@ const stapledPortrait: FormatDef = {
   duplex: false,
   impose(pageCount) {
     const m = this.pageMarginIn;
-    const sheets: Sheet[] = [];
+    const sheets = [];
     for (let i = 0; i < pageCount; i++) {
       sheets.push({
         label: `Page ${i + 1}`,
@@ -115,16 +48,7 @@ const stapledPortrait: FormatDef = {
         heightIn: this.sheetHeightIn,
         foldGuidesX: [],
         slots: [
-          contentSlot(
-            0,
-            0,
-            this.sheetWidthIn,
-            this.sheetHeightIn,
-            m,
-            i,
-            false,
-            i + 1
-          ),
+          contentSlot(0, 0, this.sheetWidthIn, this.sheetHeightIn, m, i, false, i + 1),
         ],
       });
     }
@@ -169,7 +93,7 @@ const trifold: FormatDef = {
     const foldGuidesX = [outer + cellW, outer + 2 * cellW]; // 3.75, 7.25
 
     // Front (outside of paper): panels 1,2,3 in columns L,M,R.
-    const front: Sheet = {
+    const front = {
       label: "Sheet — FRONT (outside)",
       widthIn: this.sheetWidthIn,
       heightIn: this.sheetHeightIn,
@@ -181,7 +105,7 @@ const trifold: FormatDef = {
     // printer's duplex mode. VERIFIED on a Brother HL-L2340DW (long-edge
     // duplex): rotateBack=true, backReversed=false folds into 1→6 order.
     const backPanels = opts.backReversed ? [5, 4, 3] : [3, 4, 5];
-    const back: Sheet = {
+    const back = {
       label: "Sheet — BACK (inside)",
       widthIn: this.sheetWidthIn,
       heightIn: this.sheetHeightIn,
@@ -208,7 +132,7 @@ const stapledLandscape: FormatDef = {
   duplex: false,
   impose(pageCount) {
     const m = this.pageMarginIn;
-    const sheets: Sheet[] = [];
+    const sheets = [];
     for (let i = 0; i < pageCount; i++) {
       sheets.push({
         label: `Page ${i + 1}`,
@@ -247,7 +171,7 @@ function imposeSaddleStitch(
   opts: ImposeOptions,
   geom: SaddleGeom,
   fixedFourPanels: boolean
-): { sheets: Sheet[]; oversetPages: number } {
+): { sheets: { label: string; widthIn: number; heightIn: number; foldGuidesX: number[]; slots: Slot[] }[]; oversetPages: number } {
   const cellW = geom.pageWidthIn; // 5.5
   const cellH = geom.pageHeightIn; // 8.5
   const m = geom.pageMarginIn;
@@ -257,7 +181,6 @@ function imposeSaddleStitch(
   const sheetCount = padded / 4;
   const oversetPages = fixedFourPanels ? Math.max(0, pageCount - 4) : 0;
 
-  // a page that is past the actual content becomes a blank panel
   const panel = (cellLeft: number, pageIdx: number, rotate: boolean): Slot =>
     contentSlot(
       cellLeft,
@@ -270,7 +193,7 @@ function imposeSaddleStitch(
       pageIdx + 1
     );
 
-  const sheets: Sheet[] = [];
+  const sheets = [];
   for (let i = 0; i < sheetCount; i++) {
     const fL = padded - 1 - 2 * i;
     const fR = 2 * i;

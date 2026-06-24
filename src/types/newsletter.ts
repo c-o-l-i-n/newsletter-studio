@@ -1,8 +1,3 @@
-// The real content model (replaces the spike's hardcoded sample).
-// A Newsletter is a flat, ordered list of typed Blocks. See CONTEXT.md and
-// docs/adr/0001-content-model.md. Text Blocks (Article, Advice) flow + split;
-// Media Blocks (PhotoSet, Ad, Puzzle) are atomic.
-
 import type { JSONContent } from "@tiptap/react";
 
 export type BlockId = string;
@@ -84,15 +79,3 @@ export interface Newsletter {
   publication: Publication;
   blocks: Block[];
 }
-
-export const BLOCK_LABELS: Record<BlockType, string> = {
-  article: "Article",
-  advice: "Advice Column",
-  photoset: "Photo Set",
-  ad: "Advertisement",
-  puzzle: "Puzzle",
-};
-
-let counter = 0;
-export const newId = (prefix = "b"): string =>
-  `${prefix}${Date.now().toString(36)}${(counter++).toString(36)}`;

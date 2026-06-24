@@ -8,10 +8,11 @@ import type {
   PhotoSetBlock,
   PuzzleBlock,
   Publication,
-} from "../types";
-import { BLOCK_LABELS, newId } from "../types";
-import { imageUrl, putImage } from "../imageStore";
-import { ArticleBody } from "./ArticleEditor";
+} from "../../../../types/newsletter";
+import { BLOCK_LABELS } from "../../../../constants/block-labels";
+import { newId } from "../../../../utils/ids";
+import { imageUrl, putImage } from "../../../../services/image-store";
+import { ArticleBody } from "../article-body";
 
 function pickImageFile(cb: (file: File) => void) {
   const i = document.createElement("input");
@@ -28,7 +29,7 @@ const input =
   "w-full rounded-md border border-stone-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400";
 const label = "block text-xs font-medium uppercase tracking-wide text-stone-500";
 
-export interface EditorProps {
+export interface BlockEditorProps {
   newsletter: Newsletter;
   onPublication: (patch: Partial<Publication>) => void;
   onAdd: (type: BlockType) => void;
@@ -37,14 +38,14 @@ export interface EditorProps {
   onMove: (id: string, dir: -1 | 1) => void;
 }
 
-export function Editor({
+export function BlockEditor({
   newsletter,
   onPublication,
   onAdd,
   onUpdate,
   onRemove,
   onMove,
-}: EditorProps) {
+}: BlockEditorProps) {
   const { publication: p, blocks } = newsletter;
   return (
     <div className="flex flex-col gap-4 p-4">

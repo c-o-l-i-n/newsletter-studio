@@ -1,10 +1,6 @@
-// Block model -> flowable HTML for the Paged.js pipeline. The markup/classes
-// match the placeholder theme in index.css. This is the seam between the
-// content model and the render engine that graduated from the spike.
-
-import type { Newsletter, Block } from "./types";
+import type { Newsletter, Block } from "../types/newsletter";
 import { articleBodyToHTML } from "./tiptap";
-import { imageUrl } from "./imageStore";
+import { imageUrl } from "../services/image-store";
 
 const esc = (s: string): string =>
   s
@@ -39,14 +35,10 @@ function renderBlock(block: Block): string {
       const items = block.items
         .map(
           (it) =>
-            `<p class="q">Q. ${esc(it.question)}</p><p class="a">A. ${esc(
-              it.answer
-            )}</p>`
+            `<p class="q">Q. ${esc(it.question)}</p><p class="a">A. ${esc(it.answer)}</p>`
         )
         .join("");
-      return `<section class="nl-advice"><h2 class="dept">${esc(
-        title
-      )}</h2>${items}</section>`;
+      return `<section class="nl-advice"><h2 class="dept">${esc(title)}</h2>${items}</section>`;
     }
     case "photoset": {
       const figs = block.photos

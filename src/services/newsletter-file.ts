@@ -3,13 +3,13 @@
 // original image bytes under images/. See docs/adr/0003-file-format.md.
 
 import JSZip from "jszip";
-import type { Block, Newsletter, Publication } from "./types";
+import type { Block, Newsletter, Publication } from "../types/newsletter";
 import {
   clearImages,
   extForMime,
   imageBlob,
   putImageWithId,
-} from "./imageStore";
+} from "./image-store";
 
 const FORMAT_VERSION = 1;
 

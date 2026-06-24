@@ -1,8 +1,4 @@
-// Holds the actual image bytes for the session, keyed by a stable imageId.
-// The block model references imageId only (never a transient object URL), so
-// images can be written into the .newsletter file and restored on open.
-
-import { newId } from "./types";
+import { newId } from "../utils/ids";
 
 interface Entry {
   blob: Blob;
