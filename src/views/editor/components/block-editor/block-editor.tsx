@@ -1,4 +1,4 @@
-import {Component, useState} from "react";
+import { Component, createRef, useState } from "react";
 import { ArrowUp02Icon, ArrowDown02Icon, Delete02Icon } from "hugeicons-react";
 import type {
   AdviceBlock,
@@ -65,6 +65,17 @@ export interface BlockEditorProps {
 }
 
 export class BlockEditor extends Component<BlockEditorProps> {
+  private scrollRef = createRef<HTMLDivElement>();
+
+  componentDidUpdate(prevProps: BlockEditorProps) {
+    if (this.props.newsletter.blocks.length > prevProps.newsletter.blocks.length) {
+      this.scrollRef.current?.scrollTo({
+        top: this.scrollRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }
+
   render() {
     let {
       newsletter,
@@ -74,8 +85,10 @@ export class BlockEditor extends Component<BlockEditorProps> {
       onRemove,
       onMove,
     } = this.props;
-    const {publication: p, blocks} = newsletter;
+    const { publication: p, blocks, settings } = newsletter;
     return (
+      <div className="flex h-full min-h-0 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto" ref={this.scrollRef}>
         <div className="flex flex-col gap-3 p-3">
           {/* ── Masthead ─────────────────────────────────────────────── */}
           <Card size="sm">
@@ -129,6 +142,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                   block={block}
                   first={i === 0}
                   last={i === blocks.length - 1}
+                  colorImages={settings.colorImages}
                   onUpdate={onUpdate}
                   onRemove={onRemove}
                   onMove={onMove}
@@ -140,31 +154,29 @@ export class BlockEditor extends Component<BlockEditorProps> {
                 No blocks yet — add one below.
               </p>
           )}
-
-          {/* ── Add block ────────────────────────────────────────────── */}
-          <Card size="sm" className="border border-dashed bg-transparent ring-0">
-            <CardHeader className="pb-0">
-              <CardTitle className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Add a block
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-1.5">
-                {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
-                    <Button
-                        key={t}
-                        size="sm"
-                        variant="secondary"
-                        className="h-7 text-[11px]"
-                        onClick={() => onAdd(t)}
-                    >
-                      + {BLOCK_LABELS[t]}
-                    </Button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
+        </div>
+
+        {/* ── Sticky add-block footer ───────────────────────────────── */}
+        <div className="shrink-0 border-t bg-background px-3 py-2.5">
+          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Add a block
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
+              <Button
+                key={t}
+                size="sm"
+                variant="secondary"
+                className="h-7 text-[11px]"
+                onClick={() => onAdd(t)}
+              >
+                + {BLOCK_LABELS[t]}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
     );
   }
 }
@@ -173,6 +185,7 @@ function BlockCard({
   block,
   first,
   last,
+  colorImages,
   onUpdate,
   onRemove,
   onMove,
@@ -180,6 +193,7 @@ function BlockCard({
   block: Block;
   first: boolean;
   last: boolean;
+  colorImages: boolean;
   onUpdate: (id: string, patch: BlockPatch) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
@@ -221,7 +235,7 @@ function BlockCard({
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        <BlockFields block={block} onUpdate={onUpdate} />
+        <BlockFields block={block} onUpdate={onUpdate} colorImages={colorImages} />
       </CardContent>
 
       <AlertDialog
@@ -253,9 +267,11 @@ function BlockCard({
 function BlockFields({
   block,
   onUpdate,
+  colorImages,
 }: {
   block: Block;
   onUpdate: (id: string, patch: BlockPatch) => void;
+  colorImages: boolean;
 }) {
   switch (block.type) {
     case "article":
@@ -281,7 +297,7 @@ function BlockFields({
     case "advice":
       return <AdviceFields block={block} onUpdate={onUpdate} />;
     case "imageset":
-      return <ImageSetFields block={block} onUpdate={onUpdate} />;
+      return <ImageSetFields block={block} onUpdate={onUpdate} colorImages={colorImages} />;
   }
 }
 
@@ -393,9 +409,11 @@ const BORDER_LABELS: Record<ImageBorder, string> = {
 function ImageSetFields({
   block,
   onUpdate,
+  colorImages,
 }: {
   block: ImageSetBlock;
   onUpdate: (id: string, patch: BlockPatch) => void;
+  colorImages: boolean;
 }) {
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const setImages = (images: ImageSetBlock["images"]) =>
@@ -432,7 +450,7 @@ function ImageSetFields({
                 <img
                   src={url}
                   alt=""
-                  className="h-full w-full object-cover grayscale"
+                  className={`h-full w-full object-cover${colorImages ? "" : " grayscale"}`}
                 />
               ) : (
                 <span>add</span>
@@ -553,3 +571,4 @@ function ImageSetFields({
     </>
   );
 }
+

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { FormatId, Block, BlockPatch, BlockType, Newsletter, Publication  } from "@/types";
+import type { Block, BlockPatch, BlockType, Newsletter, NewsletterSettings, Publication } from "@/types";
+import { DEFAULT_SETTINGS } from "@/types/newsletter";
 import { FORMATS } from "@/utils/formats.ts";
 import { makeBlock } from "@/utils/make-block.ts";
 import { clearImages } from "@/services/image-store.ts";
@@ -30,6 +31,7 @@ const seed: Newsletter = {
     issueLabel: "Vol. I, Iss. 1",
     date: CURRENT_MONTH_AND_YEAR,
   },
+  settings: DEFAULT_SETTINGS,
   blocks: [
     {
       id: newId(),
@@ -72,6 +74,7 @@ function blankNewsletter(): Newsletter {
       issueLabel: "Vol. I, Iss. 1",
       date: CURRENT_MONTH_AND_YEAR,
     },
+    settings: DEFAULT_SETTINGS,
     blocks: [],
   };
 }
@@ -83,7 +86,7 @@ void emptyDoc;
 
 export function EditorView() {
   const [nl, setNl] = useState<Newsletter>(seed);
-  const [formatId, setFormatId] = useState<FormatId>("trifold");
+  const formatId = nl.settings.formatId;
   const [zoom, setZoom] = useState(0.7);
   const [stats, setStats] = useState<PreviewStats>({
     pageCount: 0,
@@ -148,7 +151,7 @@ export function EditorView() {
     handleRef.current = null;
     setFileName(null);
     suppressDirty.current = true;
-    setNl(blankNewsletter());
+    setNl((prev) => ({ ...prev, blocks: [] }));
     await clearCrashCache();
   }, []);
 
@@ -244,6 +247,11 @@ export function EditorView() {
       setNl((nl) => ({ ...nl, publication: { ...nl.publication, ...patch } })),
     []
   );
+  const onSettings = useCallback(
+    (patch: Partial<NewsletterSettings>) =>
+      setNl((nl) => ({ ...nl, settings: { ...nl.settings, ...patch } })),
+    []
+  );
   const onAdd = useCallback(
     (type: BlockType) =>
       setNl((nl) => ({ ...nl, blocks: [...nl.blocks, makeBlock(type)] })),
@@ -297,13 +305,14 @@ export function EditorView() {
       imposeOpts={{ backReversed: false, rotateBack: false }}
       fullness={fullness}
       pendingAction={pendingAction}
-      onFormatChange={setFormatId}
+      onFormatChange={(id) => onSettings({ formatId: id })}
       onZoomIn={() => setZoom((z) => Math.min(1, +(z + 0.1).toFixed(2)))}
       onZoomOut={() => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2)))}
       onNew={onNew}
       onOpen={onOpen}
       onSave={onSave}
       onPublication={onPublication}
+      onSettings={onSettings}
       onAdd={onAdd}
       onUpdate={onUpdate}
       onRemove={onRemove}

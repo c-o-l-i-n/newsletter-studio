@@ -3,7 +3,8 @@
 // original image bytes under images/. See docs/adr/0003-file-format.md.
 
 import JSZip from "jszip";
-import type { Block, ImageBorder, Newsletter, Publication } from "@/types";
+import type { Block, ImageBorder, Newsletter, NewsletterSettings, Publication } from "@/types";
+import { DEFAULT_SETTINGS } from "@/types/newsletter";
 import { newId } from "@/utils/ids";
 import {
   clearImages,
@@ -22,6 +23,7 @@ interface ImageEntry {
 interface Manifest {
   formatVersion: number;
   publication: Publication;
+  settings?: NewsletterSettings;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   blocks: any[];
   images: ImageEntry[];
@@ -102,6 +104,7 @@ export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
   const manifest: Manifest = {
     formatVersion: FORMAT_VERSION,
     publication: nl.publication,
+    settings: nl.settings,
     blocks: nl.blocks,
     images,
   };
@@ -137,5 +140,9 @@ export async function zipBlobToNewsletter(blob: Blob): Promise<Newsletter> {
     putImageWithId(img.id, typed);
   }
 
-  return { publication: manifest.publication, blocks: migrateBlocks(manifest.blocks) };
+  return {
+    publication: manifest.publication,
+    settings: { ...DEFAULT_SETTINGS, ...manifest.settings },
+    blocks: migrateBlocks(manifest.blocks),
+  };
 }

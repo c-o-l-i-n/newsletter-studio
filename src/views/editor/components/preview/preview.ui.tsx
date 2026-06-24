@@ -50,7 +50,9 @@ function SheetView({
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               ) : (
-                <div className="blank-panel">{slot.blankLabel ?? "(blank panel)"}</div>
+                <div className="blank-panel">
+                  {slot.blankLabel ?? null}
+                </div>
               )}
             </div>
           );
@@ -72,6 +74,7 @@ export interface PreviewUIProps {
   showGuides: boolean;
   zoom: number;
   hostRef: React.RefObject<HTMLDivElement>;
+  colorImages: boolean;
 }
 
 export function PreviewUI({
@@ -82,11 +85,13 @@ export function PreviewUI({
   showGuides,
   zoom,
   hostRef,
+  colorImages,
 }: PreviewUIProps) {
+  const colorClass = colorImages ? "nl-color-images" : undefined;
   return (
     <>
       {/* Screen reading view — shows panels in reading/fold order with labels */}
-      <div id="reading-root" style={{ zoom }}>
+      <div id="reading-root" style={{ zoom }} className={colorClass}>
         {readingSheets.map((sheet, si) => (
           <SheetView
             key={si}
@@ -100,7 +105,7 @@ export function PreviewUI({
       </div>
 
       {/* Print-ready imposed view — hidden on screen, used when printing */}
-      <div id="print-root">
+      <div id="print-root" className={colorClass}>
         {imposedSheets.map((sheet, si) => (
           <SheetView
             key={si}

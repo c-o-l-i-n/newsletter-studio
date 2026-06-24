@@ -1,4 +1,5 @@
 import type { JSONContent } from "@tiptap/react";
+import type { FormatId } from "./formats";
 
 export type BlockId = string;
 
@@ -59,7 +60,22 @@ export interface Publication {
   date: string;
 }
 
+export type PaperSize = "letter" | "a4";
+
+export interface NewsletterSettings {
+  formatId: FormatId;
+  paperSize: PaperSize;
+  colorImages: boolean;
+}
+
+export const DEFAULT_SETTINGS: NewsletterSettings = {
+  formatId: "trifold",
+  paperSize: "letter",
+  colorImages: false,
+};
+
 export interface Newsletter {
   publication: Publication;
   blocks: Block[];
+  settings: NewsletterSettings;
 }

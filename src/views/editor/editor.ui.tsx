@@ -5,6 +5,7 @@ import type {
   BlockPatch,
   BlockType,
   Newsletter,
+  NewsletterSettings,
   Publication,
 } from "@/types";
 import { FORMATS } from "@/utils/formats.ts";
@@ -49,6 +50,7 @@ import {
   AlertCircleIcon,
   RecordIcon,
 } from "hugeicons-react";
+import { cn } from "@/lib/utils";
 
 export type SaveState = "saved" | "dirty" | "saving" | "error";
 
@@ -76,6 +78,7 @@ export interface EditorUIProps {
   onOpen: () => void;
   onSave: () => void;
   onPublication: (patch: Partial<Publication>) => void;
+  onSettings: (patch: Partial<NewsletterSettings>) => void;
   onAdd: (type: BlockType) => void;
   onUpdate: (id: string, patch: BlockPatch) => void;
   onRemove: (id: string) => void;
@@ -106,6 +109,7 @@ export function EditorUI({
   onOpen,
   onSave,
   onPublication,
+  onSettings,
   onAdd,
   onUpdate,
   onRemove,
@@ -178,6 +182,28 @@ export function EditorUI({
           </SelectContent>
         </Select>
 
+        <Separator orientation="vertical" className="mx-1.5" />
+
+        {/* Paper size */}
+        <SegmentedControl
+          value={newsletter.settings.paperSize}
+          options={[
+            { value: "letter", label: "Letter" },
+            { value: "a4", label: "A4" },
+          ]}
+          onChange={(v) => onSettings({ paperSize: v as "letter" | "a4" })}
+        />
+
+        {/* Image color mode */}
+        <SegmentedControl
+          value={newsletter.settings.colorImages ? "color" : "bw"}
+          options={[
+            { value: "bw", label: "B&W" },
+            { value: "color", label: "Color" },
+          ]}
+          onChange={(v) => onSettings({ colorImages: v === "color" })}
+        />
+
         {/* Zoom */}
         <div className="ml-1.5 flex items-center">
           <Button variant="ghost" size="icon-sm" className={tb} onClick={onZoomOut}>
@@ -196,18 +222,18 @@ export function EditorUI({
           <span className="text-muted-foreground">
             {fileName ?? "new file"} · <SaveBadge state={saveState} />
           </span>
-          {!stats.busy && (
-            <span className="text-muted-foreground">{fullness}</span>
-          )}
           {stats.busy && (
             <span className="text-muted-foreground">flowing…</span>
           )}
-          {stats.overset > 0 && (
-            <span className="inline-flex items-center gap-1 font-semibold text-destructive">
-              <AlertCircleIcon size={11} />
-              {stats.overset} overset
-            </span>
-          )}
+          {!stats.busy && FORMATS[formatId].capacity != null ? (
+            <FullnessGauge
+              used={Math.min(stats.pageCount, FORMATS[formatId].capacity!)}
+              capacity={FORMATS[formatId].capacity!}
+              overset={stats.overset}
+            />
+          ) : !stats.busy ? (
+            <span className="text-muted-foreground">{fullness}</span>
+          ) : null}
         </div>
 
         {/* Print CTA */}
@@ -224,7 +250,7 @@ export function EditorUI({
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
         {/* Sidebar */}
-        <div className="no-print flex w-[400px] shrink-0 flex-col overflow-y-auto border-r bg-background">
+        <div className="no-print flex w-[400px] shrink-0 flex-col overflow-hidden border-r bg-background">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -257,7 +283,78 @@ export function EditorUI({
         open={showPrintDialog}
         onOpenChange={setShowPrintDialog}
         formatId={formatId}
+        paperSize={newsletter.settings.paperSize}
       />
+    </div>
+  );
+}
+
+function SegmentedControl<T extends string>({
+  value,
+  options,
+  onChange,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex h-7 overflow-hidden rounded-md border">
+      {options.map((opt, i) => (
+        <button
+          key={opt.value}
+          type="button"
+          onClick={() => onChange(opt.value)}
+          className={cn(
+            "px-2.5 text-[11px] font-medium transition-colors",
+            i > 0 && "border-l",
+            value === opt.value
+              ? "bg-foreground text-background"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FullnessGauge({
+  used,
+  capacity,
+  overset,
+}: {
+  used: number;
+  capacity: number;
+  overset: number;
+}) {
+  const isOver = overset > 0;
+  return (
+    <div className={cn("flex items-center gap-1.5", isOver && "text-destructive")}>
+      <div className="flex gap-[3px]">
+        {Array.from({ length: capacity }).map((_, i) => (
+          <div
+            key={i}
+            className={cn(
+              "h-[9px] w-[5px] rounded-[2px] transition-colors",
+              i < used
+                ? isOver
+                  ? "bg-destructive"
+                  : "bg-foreground/60"
+                : "bg-border"
+            )}
+          />
+        ))}
+      </div>
+      <span
+        className={cn(
+          "text-[11px] tabular-nums",
+          isOver ? "font-semibold text-destructive" : "text-muted-foreground"
+        )}
+      >
+        {used}/{capacity} panels{isOver ? ` · ${overset} overset` : ""}
+      </span>
     </div>
   );
 }
@@ -300,14 +397,21 @@ const CONFIRM_CONTENT: Record<
   },
 };
 
+const PAPER_LABEL: Record<string, string> = {
+  letter: "Letter",
+  a4: "A4",
+};
+
 function PrintInstructionsDialog({
   open,
   onOpenChange,
   formatId,
+  paperSize,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   formatId: FormatId;
+  paperSize: string;
 }) {
   const fmt = FORMATS[formatId];
   const isDuplex = fmt.duplex;
@@ -325,7 +429,8 @@ function PrintInstructionsDialog({
           <p className="mb-3 text-muted-foreground text-[13px]">
             Use these settings in your print dialog:
           </p>
-          <PrintRow label="Paper" value="Letter (8.5″ × 11″)" />
+          <PrintRow label="Paper size" value={PAPER_LABEL[paperSize] ?? paperSize} />
+          <PrintRow label="Pages per sheet" value="1" />
           <PrintRow label="Margins" value="None" />
           <PrintRow label="Scale" value="100%" />
         </div>
@@ -370,7 +475,7 @@ function PrintRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 py-1">
       <Tick01Icon size={14} className="shrink-0 text-emerald-600" />
-      <span className="w-16 text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="w-24 text-[12px] font-medium text-muted-foreground">{label}</span>
       <span className="text-[13px] font-semibold">{value}</span>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ImposeOptions, Newsletter, FormatId } from "@/types";
-import { FORMATS } from "@/utils/formats.ts";
+import { getFormats } from "@/utils/formats.ts";
 import { newsletterToHTML } from "@/utils/render.ts";
 import { paginate } from "@/services/paginate.ts";
 import { useDebounced } from "@/hooks/use-debounced.ts";
@@ -29,10 +29,10 @@ export function Preview({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [panels, setPanels] = useState<string[]>([]);
-  const [readingSheets, setReadingSheets] = useState(() => FORMATS[formatId].readingView(0).sheets);
-  const [imposedSheets, setImposedSheets] = useState(() => FORMATS[formatId].impose(0, imposeOpts).sheets);
-
-  const fmt = FORMATS[formatId];
+  const paperSize = newsletter.settings.paperSize;
+  const fmt = useMemo(() => getFormats(paperSize)[formatId], [paperSize, formatId]);
+  const [readingSheets, setReadingSheets] = useState(() => fmt.readingView(0).sheets);
+  const [imposedSheets, setImposedSheets] = useState(() => fmt.impose(0, imposeOpts).sheets);
   const contentHTML = useMemo(() => newsletterToHTML(newsletter), [newsletter]);
   const debouncedHTML = useDebounced(contentHTML, 350);
 
@@ -94,6 +94,7 @@ export function Preview({
       showGuides={showGuides}
       zoom={zoom}
       hostRef={hostRef}
+      colorImages={newsletter.settings.colorImages}
     />
   );
 }
