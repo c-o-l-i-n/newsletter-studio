@@ -23,39 +23,25 @@ export interface AdviceBlock {
   items: AdviceItem[];
 }
 
-export interface Photo {
+export type ImageBorder = "none" | "single" | "double" | "dashed";
+
+export interface ImageItem {
   id: string;
   /** key into the image store; bytes are persisted in the .newsletter file */
-  imageId: string;
-  caption: string;
-}
-export interface PhotoSetBlock {
-  id: BlockId;
-  type: "photoset";
-  photos: Photo[];
-}
-
-export interface AdBlock {
-  id: BlockId;
-  type: "ad";
   imageId: string | null;
   caption: string;
+  border: ImageBorder;
 }
-
-export interface PuzzleBlock {
+export interface ImageSetBlock {
   id: BlockId;
-  type: "puzzle";
-  title: string;
-  imageId: string | null;
-  caption: string;
+  type: "imageset";
+  images: ImageItem[];
 }
 
 export type Block =
   | ArticleBlock
   | AdviceBlock
-  | PhotoSetBlock
-  | AdBlock
-  | PuzzleBlock;
+  | ImageSetBlock;
 
 export type BlockType = Block["type"];
 
@@ -64,13 +50,11 @@ export type BlockType = Block["type"];
 export type BlockPatch =
   | Partial<ArticleBlock>
   | Partial<AdviceBlock>
-  | Partial<PhotoSetBlock>
-  | Partial<AdBlock>
-  | Partial<PuzzleBlock>;
+  | Partial<ImageSetBlock>;
 
 export interface Publication {
   name: string;
-  tagline: string;
+  location: string;
   issueLabel: string;
   date: string;
 }

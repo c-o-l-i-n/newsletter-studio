@@ -1,12 +1,13 @@
+import {Component, useState} from "react";
+import { ArrowUp02Icon, ArrowDown02Icon, Delete02Icon } from "hugeicons-react";
 import type {
   AdviceBlock,
-  AdBlock,
   Block,
   BlockPatch,
   BlockType,
+  ImageBorder,
+  ImageSetBlock,
   Newsletter,
-  PhotoSetBlock,
-  PuzzleBlock,
   Publication,
 } from "@/types";
 import { BLOCK_LABELS } from "@/constants";
@@ -18,12 +19,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function pickImageFile(cb: (file: File) => void) {
   const i = document.createElement("input");
@@ -36,8 +53,7 @@ function pickImageFile(cb: (file: File) => void) {
   i.click();
 }
 
-const fieldLabel =
-  "text-xs font-medium uppercase tracking-wide text-stone-500";
+const fieldLabel = "flex-col items-start gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 export interface BlockEditorProps {
   newsletter: Newsletter;
@@ -48,96 +64,109 @@ export interface BlockEditorProps {
   onMove: (id: string, dir: -1 | 1) => void;
 }
 
-export function BlockEditor({
-  newsletter,
-  onPublication,
-  onAdd,
-  onUpdate,
-  onRemove,
-  onMove,
-}: BlockEditorProps) {
-  const { publication: p, blocks } = newsletter;
-  return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* Masthead */}
-      <Card size="sm" className="bg-stone-50">
-        <CardHeader className="border-b pb-2">
-          <CardTitle className="text-xs font-bold uppercase tracking-widest text-stone-500">
-            Masthead
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-3">
-          <div className="grid grid-cols-2 gap-2">
-            <Label className={`col-span-2 flex-col items-start gap-1 ${fieldLabel}`}>
-              Publication name
-              <Input
-                value={p.name}
-                onChange={(e) => onPublication({ name: e.target.value })}
-              />
-            </Label>
-            <Label className={`col-span-2 flex-col items-start gap-1 ${fieldLabel}`}>
-              Tagline
-              <Input
-                value={p.tagline}
-                onChange={(e) => onPublication({ tagline: e.target.value })}
-              />
-            </Label>
-            <Label className={`flex-col items-start gap-1 ${fieldLabel}`}>
-              Issue
-              <Input
-                value={p.issueLabel}
-                onChange={(e) => onPublication({ issueLabel: e.target.value })}
-              />
-            </Label>
-            <Label className={`flex-col items-start gap-1 ${fieldLabel}`}>
-              Date
-              <Input
-                value={p.date}
-                onChange={(e) => onPublication({ date: e.target.value })}
-              />
-            </Label>
-          </div>
-        </CardContent>
-      </Card>
+export class BlockEditor extends Component<BlockEditorProps> {
+  render() {
+    let {
+      newsletter,
+      onPublication,
+      onAdd,
+      onUpdate,
+      onRemove,
+      onMove,
+    } = this.props;
+    const {publication: p, blocks} = newsletter;
+    return (
+        <div className="flex flex-col gap-3 p-3">
+          {/* ── Masthead ─────────────────────────────────────────────── */}
+          <Card size="sm">
+            <CardHeader className="border-b border-border pb-2">
+              <CardTitle className="font-semibold uppercase tracking-widest text-muted-foreground">
+                Masthead
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <Label className={`col-span-2 ${fieldLabel}`}>
+                  Publication name
+                  <Input
+                      className="font-bold tracking-normal text-foreground"
+                      value={p.name}
+                      onChange={(e) => onPublication({name: e.target.value})}
+                  />
+                </Label>
+                <Label className={fieldLabel}>
+                  Issue
+                  <Input
+                      className="tracking-normal font-normal text-foreground"
+                      value={p.issueLabel}
+                      onChange={(e) => onPublication({issueLabel: e.target.value})}
+                  />
+                </Label>
+                <Label className={fieldLabel}>
+                  Date
+                  <Input
+                      className="tracking-normal font-normal text-foreground"
+                      value={p.date}
+                      onChange={(e) => onPublication({date: e.target.value})}
+                  />
+                </Label>
+                <Label className={`col-span-2 ${fieldLabel}`}>
+                  Location
+                  <Input
+                      className="tracking-normal font-normal text-foreground"
+                      value={p.location}
+                      onChange={(e) => onPublication({location: e.target.value})}
+                  />
+                </Label>
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Blocks */}
-      {blocks.map((block, i) => (
-        <BlockCard
-          key={block.id}
-          block={block}
-          first={i === 0}
-          last={i === blocks.length - 1}
-          onUpdate={onUpdate}
-          onRemove={onRemove}
-          onMove={onMove}
-        />
-      ))}
+          {/* ── Blocks ───────────────────────────────────────────────── */}
+          {blocks.map((block, i) => (
+              <BlockCard
+                  key={block.id}
+                  block={block}
+                  first={i === 0}
+                  last={i === blocks.length - 1}
+                  onUpdate={onUpdate}
+                  onRemove={onRemove}
+                  onMove={onMove}
+              />
+          ))}
 
-      {blocks.length === 0 && (
-        <p className="text-center text-sm text-stone-500">
-          No blocks yet. Add one below.
-        </p>
-      )}
+          {blocks.length === 0 && (
+              <p className="py-4 text-center text-[12px] text-muted-foreground">
+                No blocks yet — add one below.
+              </p>
+          )}
 
-      {/* Add block */}
-      <Card size="sm" className="border border-dashed border-stone-400 bg-transparent ring-0">
-        <CardHeader className="pb-0">
-          <CardTitle className="text-xs font-medium uppercase tracking-wide text-stone-500">
-            Add a block
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-2">
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
-              <Button key={t} size="sm" onClick={() => onAdd(t)}>
-                + {BLOCK_LABELS[t]}
-              </Button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+          {/* ── Add block ────────────────────────────────────────────── */}
+          <Card size="sm" className="border border-dashed bg-transparent ring-0">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Add a block
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
+                    <Button
+                        key={t}
+                        size="sm"
+                        variant="secondary"
+                        className="h-7 text-[11px]"
+                        onClick={() => onAdd(t)}
+                    >
+                      + {BLOCK_LABELS[t]}
+                    </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+    );
+  }
 }
 
 function BlockCard({
@@ -155,42 +184,68 @@ function BlockCard({
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
+  const [pendingRemove, setPendingRemove] = useState(false);
   return (
     <Card size="sm">
-      <CardHeader className="border-b py-1.5">
-        <CardTitle className="text-xs font-bold uppercase tracking-widest text-stone-500">
+      <CardHeader className="border-b border-border items-center">
+        <CardTitle className="font-semibold uppercase tracking-widest text-muted-foreground">
           {BLOCK_LABELS[block.type]}
         </CardTitle>
-        <CardAction className="flex gap-0.5">
+        <CardAction className="flex items-center gap-0">
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
+            className="text-muted-foreground"
             disabled={first}
             onClick={() => onMove(block.id, -1)}
           >
-            ↑
+            <ArrowUp02Icon size={15} />
           </Button>
           <Button
             variant="ghost"
-            size="icon-xs"
+            size="icon-sm"
+            className="text-muted-foreground"
             disabled={last}
             onClick={() => onMove(block.id, 1)}
           >
-            ↓
+            <ArrowDown02Icon size={15} />
           </Button>
           <Button
             variant="ghost"
-            size="icon-xs"
-            className="text-red-600 hover:bg-red-50 hover:text-red-600"
-            onClick={() => onRemove(block.id)}
+            size="icon-sm"
+            className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+            onClick={() => setPendingRemove(true)}
           >
-            ✕
+            <Delete02Icon size={15} />
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent className="flex flex-col gap-2 pt-3">
+      <CardContent className="flex flex-col gap-2">
         <BlockFields block={block} onUpdate={onUpdate} />
       </CardContent>
+
+      <AlertDialog
+        open={pendingRemove}
+        onOpenChange={(open) => { if (!open) setPendingRemove(false); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this block?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The {BLOCK_LABELS[block.type].toLowerCase()} block and all its content will be removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => { setPendingRemove(false); onRemove(block.id); }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
@@ -207,7 +262,7 @@ function BlockFields({
       return (
         <>
           <Input
-            className="text-base font-semibold"
+            className="font-semibold"
             placeholder="Headline"
             value={block.headline}
             onChange={(e) => onUpdate(block.id, { headline: e.target.value })}
@@ -225,12 +280,8 @@ function BlockFields({
       );
     case "advice":
       return <AdviceFields block={block} onUpdate={onUpdate} />;
-    case "photoset":
-      return <PhotoSetFields block={block} onUpdate={onUpdate} />;
-    case "ad":
-      return <AdFields block={block} onUpdate={onUpdate} />;
-    case "puzzle":
-      return <PuzzleFields block={block} onUpdate={onUpdate} />;
+    case "imageset":
+      return <ImageSetFields block={block} onUpdate={onUpdate} />;
   }
 }
 
@@ -241,6 +292,7 @@ function AdviceFields({
   block: AdviceBlock;
   onUpdate: (id: string, patch: BlockPatch) => void;
 }) {
+  const [pendingAdviceId, setPendingAdviceId] = useState<string | null>(null);
   const setItems = (items: AdviceBlock["items"]) =>
     onUpdate(block.id, { items });
   return (
@@ -251,9 +303,9 @@ function AdviceFields({
         onChange={(e) => onUpdate(block.id, { title: e.target.value })}
       />
       {block.items.map((it, idx) => (
-        <div key={it.id} className="rounded-md bg-stone-50 p-2">
+        <div key={it.id} className="rounded-lg bg-muted/50 p-2.5">
           <Input
-            className="mb-1"
+            className="mb-1.5"
             placeholder="Question"
             value={it.question}
             onChange={(e) =>
@@ -279,8 +331,8 @@ function AdviceFields({
           <Button
             variant="ghost"
             size="xs"
-            className="mt-1 text-red-600 hover:bg-red-50 hover:text-red-600"
-            onClick={() => setItems(block.items.filter((x) => x.id !== it.id))}
+            className="mt-1 h-6 text-[11px] text-muted-foreground hover:text-destructive"
+            onClick={() => setPendingAdviceId(it.id)}
           >
             remove Q&A {idx + 1}
           </Button>
@@ -289,7 +341,7 @@ function AdviceFields({
       <Button
         variant="secondary"
         size="sm"
-        className="self-start"
+        className="self-start text-[11px]"
         onClick={() =>
           setItems([
             ...block.items,
@@ -297,157 +349,207 @@ function AdviceFields({
           ])
         }
       >
-        + add Q&A
+        + Add Q&A
       </Button>
+
+      <AlertDialog
+        open={pendingAdviceId !== null}
+        onOpenChange={(open) => { if (!open) setPendingAdviceId(null); }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this Q&amp;A item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This question and answer will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pendingAdviceId) {
+                  setItems(block.items.filter((x) => x.id !== pendingAdviceId));
+                }
+                setPendingAdviceId(null);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
 
-function PhotoSetFields({
+const BORDER_LABELS: Record<ImageBorder, string> = {
+  none: "No border",
+  single: "Single border",
+  double: "Double border",
+  dashed: "Dashed border",
+};
+
+function ImageSetFields({
   block,
   onUpdate,
 }: {
-  block: PhotoSetBlock;
+  block: ImageSetBlock;
   onUpdate: (id: string, patch: BlockPatch) => void;
 }) {
-  const setPhotos = (photos: PhotoSetBlock["photos"]) =>
-    onUpdate(block.id, { photos });
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+  const setImages = (images: ImageSetBlock["images"]) =>
+    onUpdate(block.id, { images });
+  const updateImage = (id: string, patch: Partial<ImageSetBlock["images"][number]>) =>
+    setImages(block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)));
+  const moveImage = (id: string, dir: -1 | 1) => {
+    const i = block.images.findIndex((img) => img.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= block.images.length) return;
+    const images = [...block.images];
+    [images[i], images[j]] = [images[j], images[i]];
+    setImages(images);
+  };
+
   return (
     <>
-      {block.photos.map((ph) => (
-        <div key={ph.id} className="flex gap-2 rounded-md bg-stone-50 p-2">
-          <img
-            src={imageUrl(ph.imageId)}
-            alt=""
-            className="h-16 w-16 rounded object-cover grayscale"
-          />
-          <div className="flex-1">
-            <Input
-              placeholder="Caption"
-              value={ph.caption}
-              onChange={(e) =>
-                setPhotos(
-                  block.photos.map((x) =>
-                    x.id === ph.id ? { ...x, caption: e.target.value } : x
-                  )
+      {block.images.map((img, idx) => {
+        const url = imageUrl(img.imageId);
+        return (
+          <div key={img.id} className="flex gap-2 rounded-lg bg-muted/50 p-2">
+            {/* Thumbnail — click to replace */}
+            <button
+              type="button"
+              title={url ? "Click to replace image" : "Click to add image"}
+              className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-border text-[10px] text-muted-foreground hover:opacity-80"
+              onClick={() =>
+                pickImageFile((file) =>
+                  updateImage(img.id, { imageId: putImage(file) })
                 )
               }
-            />
-            <Button
-              variant="ghost"
-              size="xs"
-              className="mt-1 text-red-600 hover:bg-red-50 hover:text-red-600"
-              onClick={() =>
-                setPhotos(block.photos.filter((x) => x.id !== ph.id))
-              }
             >
-              remove photo
-            </Button>
+              {url ? (
+                <img
+                  src={url}
+                  alt=""
+                  className="h-full w-full object-cover grayscale"
+                />
+              ) : (
+                <span>add</span>
+              )}
+            </button>
+
+            {/* Caption + border + remove */}
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <Input
+                placeholder="Caption"
+                value={img.caption}
+                onChange={(e) =>
+                  updateImage(img.id, { caption: e.target.value })
+                }
+              />
+              <div className="flex items-center gap-1.5">
+                <Select
+                  value={img.border}
+                  onValueChange={(v) =>
+                    v && updateImage(img.id, { border: v as ImageBorder })
+                  }
+                >
+                  <SelectTrigger
+                    size="sm"
+                    className="h-6 w-30 text-xs focus-visible:ring-0"
+                  >
+                      {BORDER_LABELS[img.border]}
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(BORDER_LABELS) as ImageBorder[]).map((b) => (
+                      <SelectItem key={b} value={b} className="text-xs">
+                        {BORDER_LABELS[b]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="ml-auto size-6 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+                  onClick={() => setPendingRemoveId(img.id)}
+                >
+                  <Delete02Icon size={12} />
+                </Button>
+              </div>
+            </div>
+
+            {/* Move up/down */}
+            <div className="flex shrink-0 flex-col justify-center gap-0.5">
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="size-6 text-muted-foreground disabled:opacity-30"
+                disabled={idx === 0}
+                onClick={() => moveImage(img.id, -1)}
+              >
+                <ArrowUp02Icon size={12} />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="size-6 text-muted-foreground disabled:opacity-30"
+                disabled={idx === block.images.length - 1}
+                onClick={() => moveImage(img.id, 1)}
+              >
+                <ArrowDown02Icon size={12} />
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
+
       <Button
         variant="secondary"
         size="sm"
-        className="self-start"
+        className="self-start text-[11px]"
         onClick={() =>
           pickImageFile((file) =>
-            setPhotos([
-              ...block.photos,
-              { id: newId("p"), imageId: putImage(file), caption: "" },
+            setImages([
+              ...block.images,
+              { id: newId("img"), imageId: putImage(file), caption: "", border: "single" },
             ])
           )
         }
       >
-        + add photo
+        + Add image
       </Button>
-    </>
-  );
-}
 
-function AdFields({
-  block,
-  onUpdate,
-}: {
-  block: AdBlock;
-  onUpdate: (id: string, patch: BlockPatch) => void;
-}) {
-  return (
-    <>
-      <ImageField
-        imageId={block.imageId}
-        onChange={(imageId) => onUpdate(block.id, { imageId })}
-      />
-      <Input
-        placeholder="Caption / tagline"
-        value={block.caption}
-        onChange={(e) => onUpdate(block.id, { caption: e.target.value })}
-      />
-    </>
-  );
-}
-
-function PuzzleFields({
-  block,
-  onUpdate,
-}: {
-  block: PuzzleBlock;
-  onUpdate: (id: string, patch: BlockPatch) => void;
-}) {
-  return (
-    <>
-      <Input
-        placeholder="Puzzle title (e.g. This Month's Crossword)"
-        value={block.title}
-        onChange={(e) => onUpdate(block.id, { title: e.target.value })}
-      />
-      <ImageField
-        imageId={block.imageId}
-        onChange={(imageId) => onUpdate(block.id, { imageId })}
-      />
-      <Input
-        placeholder="Caption"
-        value={block.caption}
-        onChange={(e) => onUpdate(block.id, { caption: e.target.value })}
-      />
-    </>
-  );
-}
-
-function ImageField({
-  imageId,
-  onChange,
-}: {
-  imageId: string | null;
-  onChange: (imageId: string | null) => void;
-}) {
-  const url = imageUrl(imageId);
-  return (
-    <div className="flex items-center gap-2">
-      {url ? (
-        <img src={url} alt="" className="h-16 w-16 rounded object-cover grayscale" />
-      ) : (
-        <div className="flex h-16 w-16 items-center justify-center rounded border border-dashed border-stone-400 text-xs text-stone-400">
-          none
-        </div>
-      )}
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => pickImageFile((file) => onChange(putImage(file)))}
+      <AlertDialog
+        open={pendingRemoveId !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemoveId(null);
+        }}
       >
-        {imageId ? "replace" : "add"} image
-      </Button>
-      {imageId && (
-        <Button
-          variant="ghost"
-          size="xs"
-          className="text-red-600 hover:bg-red-50 hover:text-red-600"
-          onClick={() => onChange(null)}
-        >
-          clear
-        </Button>
-      )}
-    </div>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this image?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The image and its caption will be removed from this block.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (pendingRemoveId) {
+                  setImages(block.images.filter((x) => x.id !== pendingRemoveId));
+                }
+                setPendingRemoveId(null);
+              }}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

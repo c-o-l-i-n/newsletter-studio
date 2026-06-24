@@ -1,29 +1,65 @@
-import type { FormatId, FormatDef, ImposeOptions, BlockPatch, BlockType, Newsletter, Publication } from "@/types";
+import { useState } from "react";
+import type {
+  FormatId,
+  ImposeOptions,
+  BlockPatch,
+  BlockType,
+  Newsletter,
+  Publication,
+} from "@/types";
 import { FORMATS } from "@/utils/formats.ts";
 import { BlockEditor } from "./components/block-editor";
 import { Preview, type PreviewStats } from "./components/preview";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
+import {
+  FileAddIcon,
+  FolderOpenIcon,
+  FloppyDiskIcon,
+  PrinterIcon,
+  Tick01Icon,
+  Files01Icon,
+  News01Icon,
+  SearchAddIcon,
+  SearchMinusIcon,
+  AlertCircleIcon,
+  RecordIcon,
+} from "hugeicons-react";
 
 export type SaveState = "saved" | "dirty" | "saving" | "error";
+
+export type PendingAction =
+  | { type: "new" }
+  | { type: "open" }
+  | { type: "restore-crash"; cache: Newsletter };
 
 export interface EditorUIProps {
   newsletter: Newsletter;
   formatId: FormatId;
-  fmt: FormatDef;
-  backReversed: boolean;
-  rotateBack: boolean;
-  showGuides: boolean;
   zoom: number;
   stats: PreviewStats;
   fileName: string | null;
@@ -32,10 +68,8 @@ export interface EditorUIProps {
   hasSaveHandle: boolean;
   imposeOpts: ImposeOptions;
   fullness: string;
+  pendingAction: PendingAction | null;
   onFormatChange: (id: FormatId) => void;
-  onBackReversedChange: (v: boolean) => void;
-  onRotateBackChange: (v: boolean) => void;
-  onShowGuidesChange: (v: boolean) => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
   onNew: () => void;
@@ -47,18 +81,15 @@ export interface EditorUIProps {
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
   onStats: (s: PreviewStats) => void;
+  onConfirmPending: () => void;
+  onCancelPending: () => void;
 }
 
-const tbBtn =
-  "text-stone-100 hover:bg-stone-800 hover:text-stone-100 active:bg-stone-700";
+const tb = "h-7 text-[12px] focus-visible:ring-0";
 
 export function EditorUI({
   newsletter,
   formatId,
-  fmt,
-  backReversed,
-  rotateBack,
-  showGuides,
   zoom,
   stats,
   fileName,
@@ -67,10 +98,8 @@ export function EditorUI({
   hasSaveHandle,
   imposeOpts,
   fullness,
+  pendingAction,
   onFormatChange,
-  onBackReversedChange,
-  onRotateBackChange,
-  onShowGuidesChange,
   onZoomIn,
   onZoomOut,
   onNew,
@@ -82,118 +111,35 @@ export function EditorUI({
   onRemove,
   onMove,
   onStats,
+  onConfirmPending,
+  onCancelPending,
 }: EditorUIProps) {
+  const [showPrintDialog, setShowPrintDialog] = useState(false);
   return (
-    <div className="flex h-screen flex-col bg-stone-700">
-      {/* Toolbar */}
-      <div className="no-print flex flex-wrap items-center gap-3 bg-stone-900 px-4 py-2 text-sm text-stone-100">
-        <strong>Newsletter Studio</strong>
+    <div className="flex h-screen flex-col bg-background">
+      {/* ── Header ───────────────────────────────────────────────── */}
+      <header className="no-print flex h-10 shrink-0 items-center gap-0.5 border-b bg-background px-3">
+        {/* Brand */}
+        <span className="mr-2 flex select-none items-center gap-1.5 text-[13px] font-semibold tracking-tight">
+          <News01Icon size={15} className="text-primary" />
+          Newsletter Studio
+        </span>
 
-        <div className="flex items-center gap-1.5">
-          <Label className="font-normal text-stone-300" htmlFor="format-select">
-            Format
-          </Label>
-          <Select
-            value={formatId}
-            onValueChange={(v) => v && onFormatChange(v as FormatId)}
-          >
-            <SelectTrigger
-              id="format-select"
-              size="sm"
-              className="border-stone-600 bg-stone-800 text-stone-100 hover:bg-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Object.values(FORMATS).map((f) => (
-                <SelectItem key={f.id} value={f.id}>
-                  {f.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Separator orientation="vertical" className="mx-1.5" />
 
-        {fmt.duplex && (
-          <>
-            <div className="flex items-center gap-1.5">
-              <Checkbox
-                id="back-reversed"
-                checked={backReversed}
-                onCheckedChange={(v) => onBackReversedChange(v)}
-                className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
-              />
-              <Label
-                className="cursor-pointer font-normal text-stone-300"
-                htmlFor="back-reversed"
-              >
-                back cols reversed
-              </Label>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Checkbox
-                id="rotate-back"
-                checked={rotateBack}
-                onCheckedChange={(v) => onRotateBackChange(v)}
-                className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
-              />
-              <Label
-                className="cursor-pointer font-normal text-stone-300"
-                htmlFor="rotate-back"
-              >
-                rotate back 180°
-              </Label>
-            </div>
-          </>
-        )}
-
-        <div className="flex items-center gap-1.5">
-          <Checkbox
-            id="show-guides"
-            checked={showGuides}
-            onCheckedChange={(v) => onShowGuidesChange(v)}
-            className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
-          />
-          <Label
-            className="cursor-pointer font-normal text-stone-300"
-            htmlFor="show-guides"
-          >
-            guides
-          </Label>
-        </div>
-
-        <div className="flex items-center gap-0.5">
-          <span className="mr-1 text-stone-300">zoom</span>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className={tbBtn}
-            onClick={onZoomOut}
-          >
-            −
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className={tbBtn}
-            onClick={onZoomIn}
-          >
-            +
-          </Button>
-        </div>
-
-        <Separator orientation="vertical" className="mx-0 h-4 bg-stone-600" />
-
-        <Button variant="ghost" size="sm" className={tbBtn} onClick={onNew}>
+        {/* File ops */}
+        <Button variant="ghost" size="sm" className={`${tb} gap-1.5`} onClick={onNew}>
+          <FileAddIcon size={13} />
           New
         </Button>
-        <Button variant="ghost" size="sm" className={tbBtn} onClick={onOpen}>
+        <Button variant="ghost" size="sm" className={`${tb} gap-1.5`} onClick={onOpen}>
+          <FolderOpenIcon size={13} />
           Open…
         </Button>
         <Button
           variant="ghost"
           size="sm"
-          className={tbBtn}
+          className={`${tb} gap-1.5`}
           onClick={onSave}
           title={
             fsaSupported
@@ -201,32 +147,84 @@ export function EditorUI({
               : "Brave disables File System Access — saving downloads a file"
           }
         >
+          <FloppyDiskIcon size={13} />
           {hasSaveHandle ? "Save" : fsaSupported ? "Save As…" : "Download"}
         </Button>
+
+        <Separator orientation="vertical" className="mx-1.5" />
+
+        {/* Format selector */}
+        <Select
+          value={formatId}
+          onValueChange={(v) => v && onFormatChange(v as FormatId)}
+        >
+          <SelectTrigger
+            id="format-select"
+            size="sm"
+            className="h-7 w-40 text-[12px] focus-visible:ring-0"
+          >
+            {/* Render label directly — base-ui SelectValue renders the raw
+                value string rather than the item's display text */}
+            <span className="flex-1 truncate text-left">
+              {FORMATS[formatId].label}
+            </span>
+          </SelectTrigger>
+          <SelectContent>
+            {Object.values(FORMATS).map((f) => (
+              <SelectItem key={f.id} value={f.id}>
+                {f.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Zoom */}
+        <div className="ml-1.5 flex items-center">
+          <Button variant="ghost" size="icon-sm" className={tb} onClick={onZoomOut}>
+            <SearchMinusIcon size={14} />
+          </Button>
+          <span className="w-9 text-center text-[11px] tabular-nums text-muted-foreground">
+            {Math.round(zoom * 100)}%
+          </span>
+          <Button variant="ghost" size="icon-sm" className={tb} onClick={onZoomIn}>
+            <SearchAddIcon size={14} />
+          </Button>
+        </div>
+
+        {/* Status — right side */}
+        <div className="ml-auto flex items-center gap-3 text-[11px]">
+          <span className="text-muted-foreground">
+            {fileName ?? "new file"} · <SaveBadge state={saveState} />
+          </span>
+          {!stats.busy && (
+            <span className="text-muted-foreground">{fullness}</span>
+          )}
+          {stats.busy && (
+            <span className="text-muted-foreground">flowing…</span>
+          )}
+          {stats.overset > 0 && (
+            <span className="inline-flex items-center gap-1 font-semibold text-destructive">
+              <AlertCircleIcon size={11} />
+              {stats.overset} overset
+            </span>
+          )}
+        </div>
+
+        {/* Print CTA */}
         <Button
           size="sm"
-          className="bg-stone-100 text-stone-900 hover:bg-stone-200"
-          onClick={() => window.print()}
+          className="ml-3 h-7 shrink-0 gap-1.5 text-[12px] font-semibold"
+          onClick={() => setShowPrintDialog(true)}
         >
-          Print / Save PDF
+          <PrinterIcon size={13} />
+          Print / PDF
         </Button>
+      </header>
 
-        <span className="ml-auto flex items-center gap-3">
-          <span className="text-stone-300">
-            {fileName ?? "(unsaved file)"} · <SaveBadge state={saveState} />
-          </span>
-          <span>{stats.busy ? "flowing…" : `flowed: ${fullness}`}</span>
-          {stats.overset > 0 && (
-            <Badge variant="destructive" className="font-bold">
-              ⚠ {stats.overset} OVERSET (won't print)
-            </Badge>
-          )}
-        </span>
-      </div>
-
-      {/* Main: editor | preview */}
+      {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
-        <div className="no-print w-[440px] shrink-0 overflow-y-auto border-r border-stone-300 bg-stone-100">
+        {/* Sidebar */}
+        <div className="no-print flex w-[400px] shrink-0 flex-col overflow-y-auto border-r bg-background">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -236,28 +234,180 @@ export function EditorUI({
             onMove={onMove}
           />
         </div>
-        <div className="preview-pane flex-1 overflow-auto p-6">
+
+        {/* Preview — the desk surface */}
+        <div className="preview-pane flex-1 overflow-auto bg-muted p-8">
           <Preview
             newsletter={newsletter}
             formatId={formatId}
             imposeOpts={imposeOpts}
-            showGuides={showGuides}
+            showGuides={true}
             zoom={zoom}
             onStats={onStats}
           />
         </div>
       </div>
+
+      <ConfirmDialog
+        pendingAction={pendingAction}
+        onConfirm={onConfirmPending}
+        onCancel={onCancelPending}
+      />
+      <PrintInstructionsDialog
+        open={showPrintDialog}
+        onOpenChange={setShowPrintDialog}
+        formatId={formatId}
+      />
     </div>
   );
 }
 
 function SaveBadge({ state }: { state: SaveState }) {
-  const map: Record<SaveState, { text: string; cls: string }> = {
-    saved: { text: "● Saved", cls: "text-emerald-300" },
-    dirty: { text: "○ Unsaved", cls: "text-amber-300" },
-    saving: { text: "Saving…", cls: "text-stone-300" },
-    error: { text: "⚠ Save failed", cls: "text-red-300" },
-  };
-  const { text, cls } = map[state];
-  return <span className={cls}>{text}</span>;
+  if (state === "saved")
+    return <span className="inline-flex items-center gap-1 text-emerald-600"><RecordIcon size={8} />saved</span>;
+  if (state === "dirty")
+    return <span className="inline-flex items-center gap-1 text-amber-500"><RecordIcon size={8} />unsaved</span>;
+  if (state === "saving")
+    return <span className="text-muted-foreground">saving…</span>;
+  return <span className="inline-flex items-center gap-1 text-destructive"><AlertCircleIcon size={10} />failed</span>;
+}
+
+const CONFIRM_CONTENT: Record<
+  PendingAction["type"],
+  { title: string; description: string; cancel: string; confirm: string; destructive: boolean }
+> = {
+  new: {
+    title: "Start a new newsletter?",
+    description: "Your unsaved changes will be lost.",
+    cancel: "Keep editing",
+    confirm: "Discard & start new",
+    destructive: true,
+  },
+  open: {
+    title: "Open a different file?",
+    description: "Your unsaved changes will be lost.",
+    cancel: "Keep editing",
+    confirm: "Discard & open…",
+    destructive: true,
+  },
+  "restore-crash": {
+    title: "Restore unsaved work?",
+    description:
+      "A draft from your last session was found. Restore it or start fresh.",
+    cancel: "Start fresh",
+    confirm: "Restore draft",
+    destructive: false,
+  },
+};
+
+function PrintInstructionsDialog({
+  open,
+  onOpenChange,
+  formatId,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  formatId: FormatId;
+}) {
+  const fmt = FORMATS[formatId];
+  const isDuplex = fmt.duplex;
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-sm" showCloseButton={false}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <PrinterIcon size={18} className="text-primary" />
+            How to Print
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-1 text-sm">
+          <p className="mb-3 text-muted-foreground text-[13px]">
+            Use these settings in your print dialog:
+          </p>
+          <PrintRow label="Paper" value="Letter (8.5″ × 11″)" />
+          <PrintRow label="Margins" value="None" />
+          <PrintRow label="Scale" value="100%" />
+        </div>
+
+        {isDuplex && (
+          <div className="rounded-lg border bg-muted/50 p-3 text-[13px]">
+            <div className="flex items-start gap-2">
+              <Files01Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Double-sided printing</p>
+                <p className="mt-0.5 text-muted-foreground">
+                  Set duplex to <span className="font-semibold text-foreground">Flip on Short Edge</span> so the back prints upright when folded.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <DialogFooter className="gap-2">
+          <DialogClose render={<Button variant="outline" size="sm" />}>
+            Cancel
+          </DialogClose>
+          <Button
+            size="sm"
+            className="gap-1.5"
+            onClick={() => {
+              onOpenChange(false);
+              // Wait for the dialog close animation before printing
+              setTimeout(() => window.print(), 150);
+            }}
+          >
+            <PrinterIcon size={13} />
+            Print Now
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PrintRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2 py-1">
+      <Tick01Icon size={14} className="shrink-0 text-emerald-600" />
+      <span className="w-16 text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="text-[13px] font-semibold">{value}</span>
+    </div>
+  );
+}
+
+function ConfirmDialog({
+  pendingAction,
+  onConfirm,
+  onCancel,
+}: {
+  pendingAction: PendingAction | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const content = pendingAction ? CONFIRM_CONTENT[pendingAction.type] : null;
+  return (
+    <AlertDialog
+      open={!!pendingAction}
+      onOpenChange={(open) => {
+        if (!open) onCancel();
+      }}
+    >
+      <AlertDialogContent size="sm">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{content?.title}</AlertDialogTitle>
+          <AlertDialogDescription>{content?.description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{content?.cancel}</AlertDialogCancel>
+          <AlertDialogAction
+            variant={content?.destructive ? "destructive" : "default"}
+            onClick={onConfirm}
+          >
+            {content?.confirm}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }

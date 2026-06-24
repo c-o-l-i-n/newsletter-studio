@@ -54,6 +54,9 @@ const stapledPortrait: FormatDef = {
     }
     return { sheets, oversetPages: 0 };
   },
+  readingView(pageCount) {
+    return { sheets: this.impose(pageCount, { backReversed: false, rotateBack: false }).sheets };
+  },
 };
 
 const trifold: FormatDef = {
@@ -61,56 +64,67 @@ const trifold: FormatDef = {
   label: "Trifold",
   blurb:
     "One landscape sheet, 6 panels, letter-folded. Real imposition + duplex. Fixed capacity (6 panels).",
-  // panel cell = (11 - 2*0.25 outer) / 3 wide, (8.5 - 2*0.25) tall
-  pageWidthIn: (LETTER_LONG - 0.5) / 3, // 3.5
-  pageHeightIn: LETTER_SHORT - 0.5, // 8.0
-  pageMarginIn: 0.18,
+  // Cells span the full sheet (no outer gap). pageMarginIn is the sole margin,
+  // so outer-edge and fold-side margins are identical: m on every side.
+  // Gutter in flat view = 2×m (one from each adjacent panel). ✓
+  pageWidthIn: LETTER_LONG / 3, // ≈ 3.667
+  pageHeightIn: LETTER_SHORT,   // 8.5
+  pageMarginIn: 0.3,
   columns: 1,
   sheetWidthIn: LETTER_LONG, // landscape
   sheetHeightIn: LETTER_SHORT,
   capacity: 6,
   duplex: true,
-  impose(pageCount, opts) {
-    const outer = 0.25;
-    const cellW = this.pageWidthIn; // 3.5
-    const cellH = this.pageHeightIn; // 8.0
-    const cellTop = outer;
+  readingView(pageCount) {
+    const cellW = this.pageWidthIn;
+    const cellH = this.pageHeightIn;
     const m = this.pageMarginIn;
-    const cols = [0, 1, 2];
+    const cell = (col: number, panelIndex: number): Slot =>
+      contentSlot(col * cellW, 0, cellW, cellH, m,
+        panelIndex < pageCount ? panelIndex : null, false, panelIndex + 1);
+    return {
+      sheets: [
+        { label: "Front Cover", widthIn: cellW,              heightIn: cellH, foldGuidesX: [],                   slots: [cell(0, 0)] },
+        { label: "Inside",       widthIn: this.sheetWidthIn, heightIn: cellH, foldGuidesX: [cellW, 2 * cellW],    slots: [cell(0, 1), cell(1, 2), cell(2, 3)] },
+        { label: "Back",         widthIn: 2 * cellW,         heightIn: cellH, foldGuidesX: [cellW],               slots: [cell(0, 4), cell(1, 5)] },
+      ],
+    };
+  },
+  impose(pageCount, _opts) {
+    const cellW = this.pageWidthIn; // LETTER_LONG / 3
+    const cellH = this.pageHeightIn; // LETTER_SHORT
+    const m = this.pageMarginIn;
 
-    const cell = (col: number, panelIndex: number, rotate: boolean): Slot =>
+    const cell = (col: number, panelIndex: number): Slot =>
       contentSlot(
-        outer + col * cellW,
-        cellTop,
+        col * cellW,
+        0,
         cellW,
         cellH,
         m,
         panelIndex < pageCount ? panelIndex : null,
-        rotate,
+        false,
         panelIndex + 1
       );
 
-    const foldGuidesX = [outer + cellW, outer + 2 * cellW]; // 3.75, 7.25
+    const foldGuidesX = [cellW, 2 * cellW]; // ≈ 3.667, 7.333
 
-    // Front (outside of paper): panels 1,2,3 in columns L,M,R.
+    // C-fold layout (left→right columns on each sheet):
+    // Front (outside): [panel 5] [panel 6] [panel 1 / cover]
+    // Back  (inside):  [panel 2] [panel 3] [panel 4]
     const front = {
-      label: "Sheet — FRONT (outside)",
+      label: "Sheet — Front (outside)",
       widthIn: this.sheetWidthIn,
       heightIn: this.sheetHeightIn,
       foldGuidesX,
-      slots: cols.map((c) => cell(c, c, false)),
+      slots: [cell(0, 4), cell(1, 5), cell(2, 0)],
     };
-
-    // Back (inside): panels 4,5,6. Column order + rotation depend on the
-    // printer's duplex mode. VERIFIED on a Brother HL-L2340DW (long-edge
-    // duplex): rotateBack=true, backReversed=false folds into 1→6 order.
-    const backPanels = opts.backReversed ? [5, 4, 3] : [3, 4, 5];
     const back = {
-      label: "Sheet — BACK (inside)",
+      label: "Sheet — Back (inside)",
       widthIn: this.sheetWidthIn,
       heightIn: this.sheetHeightIn,
       foldGuidesX,
-      slots: cols.map((c) => cell(c, backPanels[c], opts.rotateBack)),
+      slots: [cell(0, 1), cell(1, 2), cell(2, 3)],
     };
 
     return { sheets: [front, back], oversetPages: Math.max(0, pageCount - 6) };
@@ -145,6 +159,9 @@ const stapledLandscape: FormatDef = {
       });
     }
     return { sheets, oversetPages: 0 };
+  },
+  readingView(pageCount) {
+    return { sheets: this.impose(pageCount, { backReversed: false, rotateBack: false }).sheets };
   },
 };
 
@@ -238,6 +255,20 @@ const bifold: FormatDef = {
   impose(pageCount, opts) {
     return imposeSaddleStitch(pageCount, opts, this, true);
   },
+  readingView(pageCount) {
+    const cellW = this.pageWidthIn;
+    const cellH = this.pageHeightIn;
+    const m = this.pageMarginIn;
+    const s = (left: number, idx: number): Slot =>
+      contentSlot(left, 0, cellW, cellH, m, idx < pageCount ? idx : null, false, idx + 1);
+    return {
+      sheets: [
+        { label: "Front Cover", widthIn: cellW,      heightIn: cellH, foldGuidesX: [],       slots: [s(0, 0)] },
+        { label: "Inside",       widthIn: 2 * cellW, heightIn: cellH, foldGuidesX: [cellW], slots: [s(0, 1), s(cellW, 2)] },
+        { label: "Back Cover",   widthIn: cellW,      heightIn: cellH, foldGuidesX: [],       slots: [s(0, 3)] },
+      ],
+    };
+  },
 };
 
 const booklet: FormatDef = {
@@ -255,6 +286,39 @@ const booklet: FormatDef = {
   duplex: true,
   impose(pageCount, opts) {
     return imposeSaddleStitch(pageCount, opts, this, false);
+  },
+  readingView(pageCount) {
+    const cellW = this.pageWidthIn;
+    const cellH = this.pageHeightIn;
+    const m = this.pageMarginIn;
+    const padded = Math.max(4, Math.ceil(pageCount / 4) * 4);
+    const PADDING_BLANK = "Left blank to complete the booklet — pages must come in multiples of 4";
+    const slot = (left: number, idx: number): Slot => {
+      const s = contentSlot(left, 0, cellW, cellH, m, idx < pageCount ? idx : null, false, idx + 1);
+      return idx >= pageCount ? { ...s, blankLabel: PADDING_BLANK } : s;
+    };
+
+    const sheets = [];
+
+    // Front cover — page 1 alone
+    sheets.push({ label: "Front Cover", widthIn: cellW, heightIn: cellH, foldGuidesX: [] as number[], slots: [slot(0, 0)] });
+
+    // Inside pages as left-right spreads: pages 2-3, 4-5, …
+    for (let i = 1; i < padded - 1; i += 2) {
+      sheets.push({
+        label: `Pages ${i + 1}–${i + 2}`,
+        widthIn: 2 * cellW,
+        heightIn: cellH,
+        foldGuidesX: [cellW],
+        slots: [slot(0, i), slot(cellW, i + 1)],
+      });
+    }
+
+    // Back cover — last page alone
+    const last = padded - 1;
+    sheets.push({ label: "Back Cover", widthIn: cellW, heightIn: cellH, foldGuidesX: [] as number[], slots: [slot(0, last)] });
+
+    return { sheets };
   },
 };
 

@@ -14,11 +14,7 @@ export function makeBlock(type: BlockType): Block {
         title: "Ask the Editor",
         items: [{ id: newId("i"), question: "", answer: "" }],
       };
-    case "photoset":
-      return { id, type, photos: [] };
-    case "ad":
-      return { id, type, imageId: null, caption: "" };
-    case "puzzle":
-      return { id, type, title: "", imageId: null, caption: "" };
+    case "imageset":
+      return { id, type, images: [] };
   }
 }

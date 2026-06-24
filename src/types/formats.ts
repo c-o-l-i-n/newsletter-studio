@@ -16,6 +16,8 @@ export interface Slot {
   rotate180?: boolean;
   /** reading-order number to show on the panel badge (1-based) */
   readingNo?: number | null;
+  /** custom label shown when the panel is blank; overrides the default "(blank panel)" */
+  blankLabel?: string;
 }
 
 export interface Sheet {
@@ -52,4 +54,6 @@ export interface FormatDef {
     sheets: Sheet[];
     oversetPages: number;
   };
+  /** Reading-order view for the screen editor (not for print). */
+  readingView(pageCount: number): { sheets: Sheet[] };
 }

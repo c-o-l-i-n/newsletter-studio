@@ -26,7 +26,10 @@ function renderBlock(block: Block): string {
       const header = hasHeader
         ? `<div class="nl-article-head">${headline}${byline}</div>`
         : "";
-      const body = articleBodyToHTML(block.body);
+      // Mark only the true first <p> so the drop cap doesn't re-fire on
+      // continuation panels after Paged.js splits the article.
+      const rawBody = articleBodyToHTML(block.body);
+      const body = rawBody.replace("<p>", '<p class="lede">');
       const bodyClass = hasHeader ? "article-body has-header" : "article-body";
       return `<article class="nl-article">${header}<div class="${bodyClass}">${body}</div></article>`;
     }
@@ -40,43 +43,23 @@ function renderBlock(block: Block): string {
         .join("");
       return `<section class="nl-advice"><h2 class="dept">${esc(title)}</h2>${items}</section>`;
     }
-    case "photoset": {
-      const figs = block.photos
-        .map((p) => {
-          const cap = p.caption.trim()
-            ? `<figcaption>${esc(p.caption)}</figcaption>`
-            : "";
-          const url = imageUrl(p.imageId);
-          const img = url
-            ? `<div class="frame"><img class="nl-img" src="${url}" alt="" /></div>`
+    case "imageset": {
+      return block.images
+        .map((item) => {
+          const url = imageUrl(item.imageId);
+          const inner = url
+            ? `<img class="nl-img" src="${url}" alt="" />`
             : `<div class="nl-img-missing">no image</div>`;
-          return `<figure class="nl-media nl-photo">${img}${cap}</figure>`;
+          const framed =
+            item.border === "none"
+              ? inner
+              : `<div class="nl-img-frame nl-img-frame--${item.border}">${inner}</div>`;
+          const cap = item.caption.trim()
+            ? `<figcaption>${esc(item.caption)}</figcaption>`
+            : "";
+          return `<figure class="nl-media nl-imageset-item">${framed}${cap}</figure>`;
         })
         .join("");
-      return figs;
-    }
-    case "ad": {
-      const url = imageUrl(block.imageId);
-      const img = url
-        ? `<div class="box"><img class="nl-img" src="${url}" alt="" /></div>`
-        : `<div class="nl-img-missing">advertisement</div>`;
-      const cap = block.caption.trim()
-        ? `<p class="cap">${esc(block.caption)}</p>`
-        : "";
-      return `<aside class="nl-media nl-ad">${img}${cap}</aside>`;
-    }
-    case "puzzle": {
-      const title = block.title.trim()
-        ? `<p class="cap" style="font-weight:700">${esc(block.title)}</p>`
-        : "";
-      const url = imageUrl(block.imageId);
-      const img = url
-        ? `<div class="frame"><img class="nl-img" src="${url}" alt="" /></div>`
-        : `<div class="nl-img-missing">puzzle image</div>`;
-      const cap = block.caption.trim()
-        ? `<p class="cap">${esc(block.caption)}</p>`
-        : "";
-      return `<figure class="nl-media nl-puzzle">${title}${img}${cap}</figure>`;
     }
   }
 }
@@ -86,7 +69,7 @@ export function newsletterToHTML(nl: Newsletter): string {
   const nameplate = `
     <header class="nl-nameplate">
       <p class="title">${esc(p.name || "Untitled")}</p>
-      <p class="dateline">${[p.issueLabel, p.date, p.tagline]
+      <p class="dateline">${[p.issueLabel, p.date, p.location]
         .filter((s) => s && s.trim())
         .map(esc)
         .join(" &nbsp;&bull;&nbsp; ")}</p>

@@ -2,6 +2,14 @@ import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import { articleExtensions } from "@/utils/tiptap.ts";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  TextBoldIcon,
+  TextItalicIcon,
+  Heading03Icon,
+  QuoteUpIcon,
+  LeftToRightListDashIcon,
+  LeftToRightListNumberIcon,
+} from "hugeicons-react";
 
 export function ArticleBody({
   value,
@@ -17,7 +25,7 @@ export function ArticleBody({
     editorProps: {
       attributes: {
         class:
-          "prose-editor min-h-[7rem] rounded-md border border-stone-300 bg-white px-3 py-2 text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-stone-400",
+          "prose-editor min-h-[6rem] rounded-b-md border-x border-b bg-background px-3 py-2 text-[14px] leading-relaxed text-foreground focus:outline-none",
       },
     },
   });
@@ -26,20 +34,21 @@ export function ArticleBody({
 
   return (
     <div>
-      <div className="mb-1 flex flex-wrap gap-1">
+      {/* Formatting toolbar */}
+      <div className="flex flex-wrap gap-0.5 rounded-t-md border bg-muted px-1.5 py-1">
         <ToolbarBtn
           title="Bold"
           active={editor.isActive("bold")}
           onActivate={() => editor.chain().focus().toggleBold().run()}
         >
-          <b>B</b>
+          <TextBoldIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Italic"
           active={editor.isActive("italic")}
           onActivate={() => editor.chain().focus().toggleItalic().run()}
         >
-          <i>I</i>
+          <TextItalicIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Subhead"
@@ -48,28 +57,28 @@ export function ArticleBody({
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
         >
-          Subhead
+          <Heading03Icon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Pull-quote"
           active={editor.isActive("blockquote")}
           onActivate={() => editor.chain().focus().toggleBlockquote().run()}
         >
-          ❝ Quote
+          <QuoteUpIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Bullet list"
           active={editor.isActive("bulletList")}
           onActivate={() => editor.chain().focus().toggleBulletList().run()}
         >
-          • List
+          <LeftToRightListDashIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Numbered list"
           active={editor.isActive("orderedList")}
           onActivate={() => editor.chain().focus().toggleOrderedList().run()}
         >
-          1. List
+          <LeftToRightListNumberIcon size={13} />
         </ToolbarBtn>
       </div>
       <EditorContent editor={editor} />
@@ -99,10 +108,10 @@ function ToolbarBtn({
         onActivate();
       }}
       className={cn(
-        "h-7 min-w-7",
+        "h-6 min-w-6 px-1.5 text-[11px]",
         active
-          ? "bg-stone-800 text-white hover:bg-stone-700 hover:text-white"
-          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+          ? "bg-foreground text-background hover:bg-foreground/80"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
     >
       {children}

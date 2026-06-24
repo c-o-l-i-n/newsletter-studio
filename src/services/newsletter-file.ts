@@ -3,7 +3,8 @@
 // original image bytes under images/. See docs/adr/0003-file-format.md.
 
 import JSZip from "jszip";
-import type { Block, Newsletter, Publication } from "@/types";
+import type { Block, ImageBorder, Newsletter, Publication } from "@/types";
+import { newId } from "@/utils/ids";
 import {
   clearImages,
   extForMime,
@@ -21,7 +22,8 @@ interface ImageEntry {
 interface Manifest {
   formatVersion: number;
   publication: Publication;
-  blocks: Block[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  blocks: any[];
   images: ImageEntry[];
 }
 
@@ -29,11 +31,58 @@ interface Manifest {
 function usedImageIds(nl: Newsletter): string[] {
   const ids = new Set<string>();
   for (const b of nl.blocks) {
-    if (b.type === "photoset") b.photos.forEach((p) => ids.add(p.imageId));
-    else if (b.type === "ad" && b.imageId) ids.add(b.imageId);
-    else if (b.type === "puzzle" && b.imageId) ids.add(b.imageId);
+    if (b.type === "imageset") b.images.forEach((i) => { if (i.imageId) ids.add(i.imageId); });
   }
   return [...ids];
+}
+
+/**
+ * Convert blocks written by old versions of the app (photoset, ad, puzzle)
+ * to the current imageset type. Safe to call on already-migrated data.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function migrateBlocks(rawBlocks: any[]): Block[] {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return rawBlocks.map((b: any): Block => {
+    if (b.type === "photoset") {
+      return {
+        id: b.id,
+        type: "imageset",
+        images: (b.photos ?? []).map((p: { id: string; imageId: string; caption: string }) => ({
+          id: p.id,
+          imageId: p.imageId ?? null,
+          caption: p.caption ?? "",
+          border: "single" as ImageBorder,
+        })),
+      };
+    }
+    if (b.type === "ad") {
+      return {
+        id: b.id,
+        type: "imageset",
+        images: [{
+          id: newId("img"),
+          imageId: b.imageId ?? null,
+          caption: b.caption ?? "",
+          border: "double" as ImageBorder,
+        }],
+      };
+    }
+    if (b.type === "puzzle") {
+      const caption = [b.title, b.caption].filter(Boolean).join(" — ");
+      return {
+        id: b.id,
+        type: "imageset",
+        images: [{
+          id: newId("img"),
+          imageId: b.imageId ?? null,
+          caption,
+          border: "single" as ImageBorder,
+        }],
+      };
+    }
+    return b as Block;
+  });
 }
 
 export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
@@ -88,5 +137,5 @@ export async function zipBlobToNewsletter(blob: Blob): Promise<Newsletter> {
     putImageWithId(img.id, typed);
   }
 
-  return { publication: manifest.publication, blocks: manifest.blocks };
+  return { publication: manifest.publication, blocks: migrateBlocks(manifest.blocks) };
 }

@@ -1,6 +1,6 @@
 # Newsletter Studio
 
-A local-first PWA for authoring and printing a personal, monthly, vintage-newspaper-style
+An offline-first PWA for authoring and printing a personal, monthly, vintage-newspaper-style
 newsletter that is mailed on paper to family and friends. The author edits **content**;
 the app owns **layout**.
 
@@ -27,26 +27,18 @@ may break and continue across panels/pages when a Format flows it.
 A Block that is atomic — placed whole, scaled to fit, and never split across a page
 boundary (e.g. **Photo Set**, **Ad**, **Puzzle**).
 
-### Block types (initial set)
+### Block types
 
 **Article**:
 A piece of flowing prose: headline, optional subhead/byline, body, optional pull-quote.
 Pure text — an Article does NOT contain photos. To pair a photo with an Article, place a
-**Photo Set** Block adjacent to it. A Text Block.
+**Photo Set** Block adjacent to it.
+
+**Image Set**:
+A block of one or more images with optional captions.
 
 **Advice Column**:
-A single Block holding one or more question-and-answer pairs from family/friends. A
-Text Block. (Not a department — just one Block.)
-
-**Photo Set**:
-A Media Block of one or more images with optional captions.
-
-**Ad**:
-A Media Block holding a single humorous "advertisement" image. Multiple Ads are just
-multiple Blocks.
-
-**Puzzle**:
-A Media Block holding a game such as a crossword.
+A single Block holding one or more question-and-answer pairs.
 
 ### Layout
 

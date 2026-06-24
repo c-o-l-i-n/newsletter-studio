@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { FormatId, Block, BlockPatch, BlockType, Newsletter, Publication  } from "@/types";
 import { FORMATS } from "@/utils/formats.ts";
 import { makeBlock } from "@/utils/make-block.ts";
@@ -18,15 +18,17 @@ import {
 } from "@/services/file-io.ts";
 import { newId } from "@/utils/ids.ts";
 import { emptyDoc } from "@/utils/tiptap.ts";
-import { EditorUI, type SaveState } from "./editor.ui";
+import { EditorUI, type SaveState, type PendingAction } from "./editor.ui";
 import type { PreviewStats } from "./components/preview";
+
+const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
 const seed: Newsletter = {
   publication: {
-    name: "The Colin Chronicles",
-    tagline: "Dublin, Ohio",
-    issueLabel: "Vol. I",
-    date: "June 2026",
+    name: "Personal Newsletter",
+    location: "New York, NY",
+    issueLabel: "Vol. I, Iss. 1",
+    date: CURRENT_MONTH_AND_YEAR,
   },
   blocks: [
     {
@@ -58,17 +60,17 @@ const seed: Newsletter = {
         ],
       },
     },
-    { id: newId(), type: "photoset", photos: [] },
+    { id: newId(), type: "imageset", images: [] },
   ],
 };
 
 function blankNewsletter(): Newsletter {
   return {
     publication: {
-      name: "My Newsletter",
-      tagline: "",
-      issueLabel: "Vol. I — No. 1",
-      date: "",
+      name: "Personal Newsletter",
+      location: "New York, NY",
+      issueLabel: "Vol. I, Iss. 1",
+      date: CURRENT_MONTH_AND_YEAR,
     },
     blocks: [],
   };
@@ -82,10 +84,7 @@ void emptyDoc;
 export function EditorView() {
   const [nl, setNl] = useState<Newsletter>(seed);
   const [formatId, setFormatId] = useState<FormatId>("trifold");
-  const [backReversed, setBackReversed] = useState(false);
-  const [rotateBack, setRotateBack] = useState(true);
-  const [showGuides, setShowGuides] = useState(true);
-  const [zoom, setZoom] = useState(0.6);
+  const [zoom, setZoom] = useState(0.7);
   const [stats, setStats] = useState<PreviewStats>({
     pageCount: 0,
     overset: 0,
@@ -95,6 +94,7 @@ export function EditorView() {
   // ---- persistence ----
   const [fileName, setFileName] = useState<string | null>(null);
   const [saveState, setSaveState] = useState<SaveState>("saved");
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const handleRef = useRef<FileSystemFileHandle | null>(null);
   const firstRun = useRef(true);
   const suppressDirty = useRef(false);
@@ -130,25 +130,31 @@ export function EditorView() {
     return () => clearTimeout(t);
   }, [nl]);
 
-  // On first load, offer to restore an OPFS crash snapshot if present.
+  // On first load, show a dialog to restore an OPFS crash snapshot if present.
   useEffect(() => {
     (async () => {
       if (!(await hasCrashCache())) return;
-      if (window.confirm("Restore unsaved work from your last session?")) {
-        const cached = await readCrashCache();
-        if (cached) {
-          suppressDirty.current = true;
-          setNl(cached);
-        }
+      const cached = await readCrashCache();
+      if (cached) {
+        setPendingAction({ type: "restore-crash", cache: cached });
       } else {
         await clearCrashCache();
       }
     })();
   }, []);
 
-  const onOpen = useCallback(async () => {
+  const doNew = useCallback(async () => {
+    clearImages();
+    handleRef.current = null;
+    setFileName(null);
+    suppressDirty.current = true;
+    setNl(blankNewsletter());
+    await clearCrashCache();
+  }, []);
+
+  const doOpen = useCallback(async () => {
     try {
-      if (fsaSupported) {
+      if (isFileSystemAccessSupported()) {
         const { newsletter, handle, name } = await openNewsletterFile();
         handleRef.current = handle;
         setFileName(name);
@@ -168,7 +174,23 @@ export function EditorView() {
         alert(`Could not open file: ${(e as Error).message}`);
       }
     }
-  }, [fsaSupported]);
+  }, []);
+
+  const onNew = useCallback(() => {
+    if (saveState !== "saved") {
+      setPendingAction({ type: "new" });
+    } else {
+      void doNew();
+    }
+  }, [saveState, doNew]);
+
+  const onOpen = useCallback(() => {
+    if (saveState !== "saved") {
+      setPendingAction({ type: "open" });
+    } else {
+      void doOpen();
+    }
+  }, [saveState, doOpen]);
 
   const onSave = useCallback(async () => {
     try {
@@ -194,19 +216,28 @@ export function EditorView() {
     }
   }, [nl, fsaSupported]);
 
-  const onNew = useCallback(async () => {
-    if (
-      saveState !== "saved" &&
-      !window.confirm("Discard unsaved changes and start a new newsletter?")
-    )
-      return;
-    clearImages();
-    handleRef.current = null;
-    setFileName(null);
-    suppressDirty.current = true;
-    setNl(blankNewsletter());
-    await clearCrashCache();
-  }, [saveState]);
+  const onConfirmPending = useCallback(async () => {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+    if (action.type === "new") {
+      await doNew();
+    } else if (action.type === "open") {
+      await doOpen();
+    } else if (action.type === "restore-crash") {
+      suppressDirty.current = true;
+      setNl(action.cache);
+    }
+  }, [pendingAction, doNew, doOpen]);
+
+  const onCancelPending = useCallback(async () => {
+    if (!pendingAction) return;
+    const action = pendingAction;
+    setPendingAction(null);
+    if (action.type === "restore-crash") {
+      await clearCrashCache();
+    }
+  }, [pendingAction]);
 
   const onPublication = useCallback(
     (patch: Partial<Publication>) =>
@@ -246,10 +277,6 @@ export function EditorView() {
     []
   );
 
-  const imposeOpts = useMemo(
-    () => ({ backReversed, rotateBack }),
-    [backReversed, rotateBack]
-  );
   const fmt = FORMATS[formatId];
 
   const fullness =
@@ -261,24 +288,18 @@ export function EditorView() {
     <EditorUI
       newsletter={nl}
       formatId={formatId}
-      fmt={fmt}
-      backReversed={backReversed}
-      rotateBack={rotateBack}
-      showGuides={showGuides}
       zoom={zoom}
       stats={stats}
       fileName={fileName}
       saveState={saveState}
       fsaSupported={fsaSupported}
       hasSaveHandle={handleRef.current !== null}
-      imposeOpts={imposeOpts}
+      imposeOpts={{ backReversed: false, rotateBack: false }}
       fullness={fullness}
+      pendingAction={pendingAction}
       onFormatChange={setFormatId}
-      onBackReversedChange={setBackReversed}
-      onRotateBackChange={setRotateBack}
-      onShowGuidesChange={setShowGuides}
       onZoomIn={() => setZoom((z) => Math.min(1, +(z + 0.1).toFixed(2)))}
-      onZoomOut={() => setZoom((z) => Math.max(0.25, +(z - 0.1).toFixed(2)))}
+      onZoomOut={() => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2)))}
       onNew={onNew}
       onOpen={onOpen}
       onSave={onSave}
@@ -288,6 +309,8 @@ export function EditorView() {
       onRemove={onRemove}
       onMove={onMove}
       onStats={setStats}
+      onConfirmPending={onConfirmPending}
+      onCancelPending={onCancelPending}
     />
   );
 }

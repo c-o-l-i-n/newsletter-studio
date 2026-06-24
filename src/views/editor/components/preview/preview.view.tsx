@@ -29,7 +29,8 @@ export function Preview({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [panels, setPanels] = useState<string[]>([]);
-  const [sheets, setSheets] = useState(() => FORMATS[formatId].impose(0, imposeOpts).sheets);
+  const [readingSheets, setReadingSheets] = useState(() => FORMATS[formatId].readingView(0).sheets);
+  const [imposedSheets, setImposedSheets] = useState(() => FORMATS[formatId].impose(0, imposeOpts).sheets);
 
   const fmt = FORMATS[formatId];
   const contentHTML = useMemo(() => newsletterToHTML(newsletter), [newsletter]);
@@ -43,7 +44,7 @@ export function Preview({
       el.id = "page-size";
       document.head.appendChild(el);
     }
-    el.textContent = `@media print { @page { size: ${fmt.sheetWidthIn}in ${fmt.sheetHeightIn}in; margin: 0; } }`;
+    el.textContent = `@page { size: ${fmt.sheetWidthIn}in ${fmt.sheetHeightIn}in; margin: 0; }`;
   }, [fmt]);
 
   // Serialized pagination: Paged.js mutates a shared host + <head> styles, so
@@ -72,7 +73,8 @@ export function Preview({
           rotateBack,
         });
         setPanels(panels);
-        setSheets(sheets);
+        setImposedSheets(sheets);
+        setReadingSheets(fmt.readingView(pageCount).sheets);
         onStats?.({ pageCount, overset: oversetPages, busy: false });
       } catch {
         if (myId === seqRef.current)
@@ -85,7 +87,8 @@ export function Preview({
 
   return (
     <PreviewUI
-      sheets={sheets}
+      readingSheets={readingSheets}
+      imposedSheets={imposedSheets}
       panels={panels}
       columns={fmt.columns}
       showGuides={showGuides}
