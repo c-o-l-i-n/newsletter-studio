@@ -1,4 +1,4 @@
-import type { Sheet } from "../../../../types/formats";
+import type { Sheet } from "@/types";
 
 function SheetView({
   sheet,

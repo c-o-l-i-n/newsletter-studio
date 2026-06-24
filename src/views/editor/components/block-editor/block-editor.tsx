@@ -8,11 +8,22 @@ import type {
   PhotoSetBlock,
   PuzzleBlock,
   Publication,
-} from "../../../../types/newsletter";
-import { BLOCK_LABELS } from "../../../../constants/block-labels";
-import { newId } from "../../../../utils/ids";
-import { imageUrl, putImage } from "../../../../services/image-store";
+} from "@/types";
+import { BLOCK_LABELS } from "@/constants";
+import { newId } from "@/utils/ids.ts";
+import { imageUrl, putImage } from "@/services/image-store.ts";
 import { ArticleBody } from "../article-body";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 function pickImageFile(cb: (file: File) => void) {
   const i = document.createElement("input");
@@ -25,9 +36,8 @@ function pickImageFile(cb: (file: File) => void) {
   i.click();
 }
 
-const input =
-  "w-full rounded-md border border-stone-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400";
-const label = "block text-xs font-medium uppercase tracking-wide text-stone-500";
+const fieldLabel =
+  "text-xs font-medium uppercase tracking-wide text-stone-500";
 
 export interface BlockEditorProps {
   newsletter: Newsletter;
@@ -50,45 +60,45 @@ export function BlockEditor({
   return (
     <div className="flex flex-col gap-4 p-4">
       {/* Masthead */}
-      <section className="rounded-lg border border-stone-300 bg-stone-50 p-3">
-        <h2 className="mb-2 text-xs font-bold uppercase tracking-widest text-stone-500">
-          Masthead
-        </h2>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="col-span-2">
-            <span className={label}>Publication name</span>
-            <input
-              className={input}
-              value={p.name}
-              onChange={(e) => onPublication({ name: e.target.value })}
-            />
-          </label>
-          <label className="col-span-2">
-            <span className={label}>Tagline</span>
-            <input
-              className={input}
-              value={p.tagline}
-              onChange={(e) => onPublication({ tagline: e.target.value })}
-            />
-          </label>
-          <label>
-            <span className={label}>Issue</span>
-            <input
-              className={input}
-              value={p.issueLabel}
-              onChange={(e) => onPublication({ issueLabel: e.target.value })}
-            />
-          </label>
-          <label>
-            <span className={label}>Date</span>
-            <input
-              className={input}
-              value={p.date}
-              onChange={(e) => onPublication({ date: e.target.value })}
-            />
-          </label>
-        </div>
-      </section>
+      <Card size="sm" className="bg-stone-50">
+        <CardHeader className="border-b pb-2">
+          <CardTitle className="text-xs font-bold uppercase tracking-widest text-stone-500">
+            Masthead
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Label className={`col-span-2 flex-col items-start gap-1 ${fieldLabel}`}>
+              Publication name
+              <Input
+                value={p.name}
+                onChange={(e) => onPublication({ name: e.target.value })}
+              />
+            </Label>
+            <Label className={`col-span-2 flex-col items-start gap-1 ${fieldLabel}`}>
+              Tagline
+              <Input
+                value={p.tagline}
+                onChange={(e) => onPublication({ tagline: e.target.value })}
+              />
+            </Label>
+            <Label className={`flex-col items-start gap-1 ${fieldLabel}`}>
+              Issue
+              <Input
+                value={p.issueLabel}
+                onChange={(e) => onPublication({ issueLabel: e.target.value })}
+              />
+            </Label>
+            <Label className={`flex-col items-start gap-1 ${fieldLabel}`}>
+              Date
+              <Input
+                value={p.date}
+                onChange={(e) => onPublication({ date: e.target.value })}
+              />
+            </Label>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Blocks */}
       {blocks.map((block, i) => (
@@ -110,20 +120,22 @@ export function BlockEditor({
       )}
 
       {/* Add block */}
-      <section className="rounded-lg border border-dashed border-stone-400 p-3">
-        <h2 className={label}>Add a block</h2>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
-            <button
-              key={t}
-              onClick={() => onAdd(t)}
-              className="rounded-md bg-stone-800 px-3 py-1 text-sm text-white hover:bg-stone-700"
-            >
-              + {BLOCK_LABELS[t]}
-            </button>
-          ))}
-        </div>
-      </section>
+      <Card size="sm" className="border border-dashed border-stone-400 bg-transparent ring-0">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-xs font-medium uppercase tracking-wide text-stone-500">
+            Add a block
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(BLOCK_LABELS) as BlockType[]).map((t) => (
+              <Button key={t} size="sm" onClick={() => onAdd(t)}>
+                + {BLOCK_LABELS[t]}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -144,27 +156,42 @@ function BlockCard({
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
   return (
-    <section className="rounded-lg border border-stone-300 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-stone-200 px-3 py-1.5">
-        <span className="text-xs font-bold uppercase tracking-widest text-stone-500">
+    <Card size="sm">
+      <CardHeader className="border-b py-1.5">
+        <CardTitle className="text-xs font-bold uppercase tracking-widest text-stone-500">
           {BLOCK_LABELS[block.type]}
-        </span>
-        <div className="flex gap-1">
-          <IconBtn disabled={first} onClick={() => onMove(block.id, -1)}>
+        </CardTitle>
+        <CardAction className="flex gap-0.5">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            disabled={first}
+            onClick={() => onMove(block.id, -1)}
+          >
             ↑
-          </IconBtn>
-          <IconBtn disabled={last} onClick={() => onMove(block.id, 1)}>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            disabled={last}
+            onClick={() => onMove(block.id, 1)}
+          >
             ↓
-          </IconBtn>
-          <IconBtn onClick={() => onRemove(block.id)} danger>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-red-600 hover:bg-red-50 hover:text-red-600"
+            onClick={() => onRemove(block.id)}
+          >
             ✕
-          </IconBtn>
-        </div>
-      </header>
-      <div className="flex flex-col gap-2 p-3">
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-2 pt-3">
         <BlockFields block={block} onUpdate={onUpdate} />
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -179,14 +206,13 @@ function BlockFields({
     case "article":
       return (
         <>
-          <input
-            className={`${input} text-base font-semibold`}
+          <Input
+            className="text-base font-semibold"
             placeholder="Headline"
             value={block.headline}
             onChange={(e) => onUpdate(block.id, { headline: e.target.value })}
           />
-          <input
-            className={input}
+          <Input
             placeholder="Byline (optional)"
             value={block.byline}
             onChange={(e) => onUpdate(block.id, { byline: e.target.value })}
@@ -219,16 +245,15 @@ function AdviceFields({
     onUpdate(block.id, { items });
   return (
     <>
-      <input
-        className={input}
+      <Input
         placeholder="Column title"
         value={block.title}
         onChange={(e) => onUpdate(block.id, { title: e.target.value })}
       />
       {block.items.map((it, idx) => (
         <div key={it.id} className="rounded-md bg-stone-50 p-2">
-          <input
-            className={`${input} mb-1`}
+          <Input
+            className="mb-1"
             placeholder="Question"
             value={it.question}
             onChange={(e) =>
@@ -239,8 +264,7 @@ function AdviceFields({
               )
             }
           />
-          <textarea
-            className={input}
+          <Textarea
             rows={2}
             placeholder="Answer"
             value={it.answer}
@@ -252,16 +276,20 @@ function AdviceFields({
               )
             }
           />
-          <button
-            className="mt-1 text-xs text-red-600 hover:underline"
+          <Button
+            variant="ghost"
+            size="xs"
+            className="mt-1 text-red-600 hover:bg-red-50 hover:text-red-600"
             onClick={() => setItems(block.items.filter((x) => x.id !== it.id))}
           >
             remove Q&A {idx + 1}
-          </button>
+          </Button>
         </div>
       ))}
-      <button
-        className="self-start rounded bg-stone-200 px-2 py-1 text-sm hover:bg-stone-300"
+      <Button
+        variant="secondary"
+        size="sm"
+        className="self-start"
         onClick={() =>
           setItems([
             ...block.items,
@@ -270,7 +298,7 @@ function AdviceFields({
         }
       >
         + add Q&A
-      </button>
+      </Button>
     </>
   );
 }
@@ -294,8 +322,7 @@ function PhotoSetFields({
             className="h-16 w-16 rounded object-cover grayscale"
           />
           <div className="flex-1">
-            <input
-              className={input}
+            <Input
               placeholder="Caption"
               value={ph.caption}
               onChange={(e) =>
@@ -306,19 +333,23 @@ function PhotoSetFields({
                 )
               }
             />
-            <button
-              className="mt-1 text-xs text-red-600 hover:underline"
+            <Button
+              variant="ghost"
+              size="xs"
+              className="mt-1 text-red-600 hover:bg-red-50 hover:text-red-600"
               onClick={() =>
                 setPhotos(block.photos.filter((x) => x.id !== ph.id))
               }
             >
               remove photo
-            </button>
+            </Button>
           </div>
         </div>
       ))}
-      <button
-        className="self-start rounded bg-stone-200 px-2 py-1 text-sm hover:bg-stone-300"
+      <Button
+        variant="secondary"
+        size="sm"
+        className="self-start"
         onClick={() =>
           pickImageFile((file) =>
             setPhotos([
@@ -329,7 +360,7 @@ function PhotoSetFields({
         }
       >
         + add photo
-      </button>
+      </Button>
     </>
   );
 }
@@ -347,8 +378,7 @@ function AdFields({
         imageId={block.imageId}
         onChange={(imageId) => onUpdate(block.id, { imageId })}
       />
-      <input
-        className={input}
+      <Input
         placeholder="Caption / tagline"
         value={block.caption}
         onChange={(e) => onUpdate(block.id, { caption: e.target.value })}
@@ -366,8 +396,7 @@ function PuzzleFields({
 }) {
   return (
     <>
-      <input
-        className={input}
+      <Input
         placeholder="Puzzle title (e.g. This Month's Crossword)"
         value={block.title}
         onChange={(e) => onUpdate(block.id, { title: e.target.value })}
@@ -376,8 +405,7 @@ function PuzzleFields({
         imageId={block.imageId}
         onChange={(imageId) => onUpdate(block.id, { imageId })}
       />
-      <input
-        className={input}
+      <Input
         placeholder="Caption"
         value={block.caption}
         onChange={(e) => onUpdate(block.id, { caption: e.target.value })}
@@ -403,48 +431,23 @@ function ImageField({
           none
         </div>
       )}
-      <button
-        className="rounded bg-stone-200 px-2 py-1 text-sm hover:bg-stone-300"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={() => pickImageFile((file) => onChange(putImage(file)))}
       >
         {imageId ? "replace" : "add"} image
-      </button>
+      </Button>
       {imageId && (
-        <button
-          className="text-xs text-red-600 hover:underline"
+        <Button
+          variant="ghost"
+          size="xs"
+          className="text-red-600 hover:bg-red-50 hover:text-red-600"
           onClick={() => onChange(null)}
         >
           clear
-        </button>
+        </Button>
       )}
     </div>
-  );
-}
-
-function IconBtn({
-  children,
-  onClick,
-  disabled,
-  danger,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  disabled?: boolean;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`h-6 w-6 rounded text-sm ${
-        disabled
-          ? "cursor-not-allowed text-stone-300"
-          : danger
-          ? "text-red-600 hover:bg-red-50"
-          : "text-stone-600 hover:bg-stone-100"
-      }`}
-    >
-      {children}
-    </button>
   );
 }

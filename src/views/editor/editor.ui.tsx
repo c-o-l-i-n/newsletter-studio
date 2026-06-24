@@ -1,8 +1,19 @@
-import type { FormatId, FormatDef, ImposeOptions } from "../../types/formats";
-import type { BlockPatch, BlockType, Newsletter, Publication } from "../../types/newsletter";
-import { FORMATS } from "../../utils/formats";
+import type { FormatId, FormatDef, ImposeOptions, BlockPatch, BlockType, Newsletter, Publication } from "@/types";
+import { FORMATS } from "@/utils/formats.ts";
 import { BlockEditor } from "./components/block-editor";
 import { Preview, type PreviewStats } from "./components/preview";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export type SaveState = "saved" | "dirty" | "saving" | "error";
 
@@ -37,6 +48,9 @@ export interface EditorUIProps {
   onMove: (id: string, dir: -1 | 1) => void;
   onStats: (s: PreviewStats) => void;
 }
+
+const tbBtn =
+  "text-stone-100 hover:bg-stone-800 hover:text-stone-100 active:bg-stone-700";
 
 export function EditorUI({
   newsletter,
@@ -74,70 +88,112 @@ export function EditorUI({
       {/* Toolbar */}
       <div className="no-print flex flex-wrap items-center gap-3 bg-stone-900 px-4 py-2 text-sm text-stone-100">
         <strong>Newsletter Studio</strong>
-        <label className="flex items-center gap-1">
-          Format
-          <select
-            className="rounded bg-stone-800 px-1 py-0.5"
+
+        <div className="flex items-center gap-1.5">
+          <Label className="font-normal text-stone-300" htmlFor="format-select">
+            Format
+          </Label>
+          <Select
             value={formatId}
-            onChange={(e) => onFormatChange(e.target.value as FormatId)}
+            onValueChange={(v) => v && onFormatChange(v as FormatId)}
           >
-            {Object.values(FORMATS).map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.label}
-              </option>
-            ))}
-          </select>
-        </label>
+            <SelectTrigger
+              id="format-select"
+              size="sm"
+              className="border-stone-600 bg-stone-800 text-stone-100 hover:bg-stone-700 dark:bg-stone-800 dark:hover:bg-stone-700"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(FORMATS).map((f) => (
+                <SelectItem key={f.id} value={f.id}>
+                  {f.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {fmt.duplex && (
           <>
-            <label className="flex items-center gap-1">
-              <input
-                type="checkbox"
+            <div className="flex items-center gap-1.5">
+              <Checkbox
+                id="back-reversed"
                 checked={backReversed}
-                onChange={(e) => onBackReversedChange(e.target.checked)}
+                onCheckedChange={(v) => onBackReversedChange(v)}
+                className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
               />
-              back cols reversed
-            </label>
-            <label className="flex items-center gap-1">
-              <input
-                type="checkbox"
+              <Label
+                className="cursor-pointer font-normal text-stone-300"
+                htmlFor="back-reversed"
+              >
+                back cols reversed
+              </Label>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Checkbox
+                id="rotate-back"
                 checked={rotateBack}
-                onChange={(e) => onRotateBackChange(e.target.checked)}
+                onCheckedChange={(v) => onRotateBackChange(v)}
+                className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
               />
-              rotate back 180°
-            </label>
+              <Label
+                className="cursor-pointer font-normal text-stone-300"
+                htmlFor="rotate-back"
+              >
+                rotate back 180°
+              </Label>
+            </div>
           </>
         )}
 
-        <label className="flex items-center gap-1">
-          <input
-            type="checkbox"
+        <div className="flex items-center gap-1.5">
+          <Checkbox
+            id="show-guides"
             checked={showGuides}
-            onChange={(e) => onShowGuidesChange(e.target.checked)}
+            onCheckedChange={(v) => onShowGuidesChange(v)}
+            className="border-stone-500 data-checked:border-stone-400 data-checked:bg-stone-600"
           />
-          guides
-        </label>
+          <Label
+            className="cursor-pointer font-normal text-stone-300"
+            htmlFor="show-guides"
+          >
+            guides
+          </Label>
+        </div>
 
-        <span className="flex items-center gap-1">
-          zoom
-          <button className="rounded bg-stone-800 px-2" onClick={onZoomOut}>
+        <div className="flex items-center gap-0.5">
+          <span className="mr-1 text-stone-300">zoom</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className={tbBtn}
+            onClick={onZoomOut}
+          >
             −
-          </button>
-          <button className="rounded bg-stone-800 px-2" onClick={onZoomIn}>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className={tbBtn}
+            onClick={onZoomIn}
+          >
             +
-          </button>
-        </span>
+          </Button>
+        </div>
 
-        <span className="mx-1 h-4 w-px bg-stone-600" />
-        <button className="rounded bg-stone-800 px-2 py-0.5" onClick={onNew}>
+        <Separator orientation="vertical" className="mx-0 h-4 bg-stone-600" />
+
+        <Button variant="ghost" size="sm" className={tbBtn} onClick={onNew}>
           New
-        </button>
-        <button className="rounded bg-stone-800 px-2 py-0.5" onClick={onOpen}>
+        </Button>
+        <Button variant="ghost" size="sm" className={tbBtn} onClick={onOpen}>
           Open…
-        </button>
-        <button
-          className="rounded bg-stone-800 px-2 py-0.5"
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={tbBtn}
           onClick={onSave}
           title={
             fsaSupported
@@ -146,13 +202,14 @@ export function EditorUI({
           }
         >
           {hasSaveHandle ? "Save" : fsaSupported ? "Save As…" : "Download"}
-        </button>
-        <button
-          className="rounded bg-stone-100 px-3 py-0.5 font-semibold text-stone-900"
+        </Button>
+        <Button
+          size="sm"
+          className="bg-stone-100 text-stone-900 hover:bg-stone-200"
           onClick={() => window.print()}
         >
           Print / Save PDF
-        </button>
+        </Button>
 
         <span className="ml-auto flex items-center gap-3">
           <span className="text-stone-300">
@@ -160,10 +217,9 @@ export function EditorUI({
           </span>
           <span>{stats.busy ? "flowing…" : `flowed: ${fullness}`}</span>
           {stats.overset > 0 && (
-            <span className="font-bold text-red-300">
-              {" "}
-              · ⚠ {stats.overset} OVERSET (won't print)
-            </span>
+            <Badge variant="destructive" className="font-bold">
+              ⚠ {stats.overset} OVERSET (won't print)
+            </Badge>
           )}
         </span>
       </div>

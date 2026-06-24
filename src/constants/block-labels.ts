@@ -1,4 +1,4 @@
-import type { BlockType } from "../types/newsletter";
+import type { BlockType } from "@/types";
 
 export const BLOCK_LABELS: Record<BlockType, string> = {
   article: "Article",

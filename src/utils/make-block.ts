@@ -1,4 +1,4 @@
-import type { Block, BlockType } from "../types/newsletter";
+import type { Block, BlockType } from "@/types";
 import { newId } from "./ids";
 import { emptyDoc } from "./tiptap";
 

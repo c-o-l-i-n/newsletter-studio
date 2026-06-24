@@ -1,4 +1,4 @@
-import type { FormatDef, FormatId, ImposeOptions, Slot } from "../types/formats";
+import type { FormatDef, FormatId, ImposeOptions, Slot } from "@/types";
 
 const LETTER_LONG = 11;
 const LETTER_SHORT = 8.5;

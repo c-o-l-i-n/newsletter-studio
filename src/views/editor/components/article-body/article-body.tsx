@@ -1,7 +1,8 @@
 import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
-import { articleExtensions } from "../../../../utils/tiptap";
+import { articleExtensions } from "@/utils/tiptap.ts";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-// Constrained rich-text body editor. Only semantic marks; no design controls.
 export function ArticleBody({
   value,
   onChange,
@@ -23,81 +24,88 @@ export function ArticleBody({
 
   if (!editor) return null;
 
-  const Btn = ({
-    on,
-    active,
-    children,
-    title,
-  }: {
-    on: () => void;
-    active: boolean;
-    children: React.ReactNode;
-    title: string;
-  }) => (
-    <button
-      type="button"
-      title={title}
-      onMouseDown={(e) => {
-        e.preventDefault();
-        on();
-      }}
-      className={`h-7 min-w-7 rounded px-2 text-sm ${
-        active
-          ? "bg-stone-800 text-white"
-          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
-      }`}
-    >
-      {children}
-    </button>
-  );
-
   return (
     <div>
       <div className="mb-1 flex flex-wrap gap-1">
-        <Btn
+        <ToolbarBtn
           title="Bold"
           active={editor.isActive("bold")}
-          on={() => editor.chain().focus().toggleBold().run()}
+          onActivate={() => editor.chain().focus().toggleBold().run()}
         >
           <b>B</b>
-        </Btn>
-        <Btn
+        </ToolbarBtn>
+        <ToolbarBtn
           title="Italic"
           active={editor.isActive("italic")}
-          on={() => editor.chain().focus().toggleItalic().run()}
+          onActivate={() => editor.chain().focus().toggleItalic().run()}
         >
           <i>I</i>
-        </Btn>
-        <Btn
+        </ToolbarBtn>
+        <ToolbarBtn
           title="Subhead"
           active={editor.isActive("heading", { level: 3 })}
-          on={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onActivate={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
         >
           Subhead
-        </Btn>
-        <Btn
+        </ToolbarBtn>
+        <ToolbarBtn
           title="Pull-quote"
           active={editor.isActive("blockquote")}
-          on={() => editor.chain().focus().toggleBlockquote().run()}
+          onActivate={() => editor.chain().focus().toggleBlockquote().run()}
         >
           ❝ Quote
-        </Btn>
-        <Btn
+        </ToolbarBtn>
+        <ToolbarBtn
           title="Bullet list"
           active={editor.isActive("bulletList")}
-          on={() => editor.chain().focus().toggleBulletList().run()}
+          onActivate={() => editor.chain().focus().toggleBulletList().run()}
         >
           • List
-        </Btn>
-        <Btn
+        </ToolbarBtn>
+        <ToolbarBtn
           title="Numbered list"
           active={editor.isActive("orderedList")}
-          on={() => editor.chain().focus().toggleOrderedList().run()}
+          onActivate={() => editor.chain().focus().toggleOrderedList().run()}
         >
           1. List
-        </Btn>
+        </ToolbarBtn>
       </div>
       <EditorContent editor={editor} />
     </div>
+  );
+}
+
+function ToolbarBtn({
+  onActivate,
+  active,
+  children,
+  title,
+}: {
+  onActivate: () => void;
+  active: boolean;
+  children: React.ReactNode;
+  title: string;
+}) {
+  return (
+    <Button
+      type="button"
+      title={title}
+      variant="ghost"
+      size="sm"
+      onMouseDown={(e) => {
+        e.preventDefault();
+        onActivate();
+      }}
+      className={cn(
+        "h-7 min-w-7",
+        active
+          ? "bg-stone-800 text-white hover:bg-stone-700 hover:text-white"
+          : "bg-stone-100 text-stone-700 hover:bg-stone-200"
+      )}
+    >
+      {children}
+    </Button>
   );
 }

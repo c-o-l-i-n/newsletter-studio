@@ -1,4 +1,4 @@
-import { newId } from "../utils/ids";
+import { newId } from "@/utils/ids";
 
 interface Entry {
   blob: Blob;

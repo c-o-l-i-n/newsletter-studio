@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { FormatId } from "../../types/formats";
-import type { Block, BlockPatch, BlockType, Newsletter, Publication } from "../../types/newsletter";
-import { FORMATS } from "../../utils/formats";
-import { makeBlock } from "../../utils/make-block";
-import { clearImages } from "../../services/image-store";
+import type { FormatId, Block, BlockPatch, BlockType, Newsletter, Publication  } from "@/types";
+import { FORMATS } from "@/utils/formats.ts";
+import { makeBlock } from "@/utils/make-block.ts";
+import { clearImages } from "@/services/image-store.ts";
 import {
   clearCrashCache,
   downloadNewsletter,
@@ -16,9 +15,9 @@ import {
   saveNewsletterAs,
   writeCrashCache,
   writeToHandle,
-} from "../../services/file-io";
-import { newId } from "../../utils/ids";
-import { emptyDoc } from "../../utils/tiptap";
+} from "@/services/file-io.ts";
+import { newId } from "@/utils/ids.ts";
+import { emptyDoc } from "@/utils/tiptap.ts";
 import { EditorUI, type SaveState } from "./editor.ui";
 import type { PreviewStats } from "./components/preview";
 

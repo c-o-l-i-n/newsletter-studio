@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ImposeOptions } from "../../../../types/formats";
-import type { Newsletter } from "../../../../types/newsletter";
-import { FORMATS } from "../../../../utils/formats";
-import type { FormatId } from "../../../../types/formats";
-import { newsletterToHTML } from "../../../../utils/render";
-import { paginate } from "../../../../services/paginate";
-import { useDebounced } from "../../../../hooks/use-debounced";
+import type { ImposeOptions, Newsletter, FormatId } from "@/types";
+import { FORMATS } from "@/utils/formats.ts";
+import { newsletterToHTML } from "@/utils/render.ts";
+import { paginate } from "@/services/paginate.ts";
+import { useDebounced } from "@/hooks/use-debounced.ts";
 import { PreviewUI } from "./preview.ui";
 
 export interface PreviewStats {

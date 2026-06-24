@@ -1,7 +1,7 @@
 // File System Access (open/save the .newsletter file directly on disk) plus a
 // silent OPFS crash cache. Chromium assumed (ADR 0003).
 
-import type { Newsletter } from "../types/newsletter";
+import type { Newsletter } from "@/types";
 import { newsletterToZipBlob, zipBlobToNewsletter } from "./newsletter-file";
 
 interface FilePickerAcceptType {

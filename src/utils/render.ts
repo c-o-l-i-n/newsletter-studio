@@ -1,6 +1,6 @@
-import type { Newsletter, Block } from "../types/newsletter";
+import type { Newsletter, Block } from "@/types";
 import { articleBodyToHTML } from "./tiptap";
-import { imageUrl } from "../services/image-store";
+import { imageUrl } from "@/services/image-store";
 
 const esc = (s: string): string =>
   s
