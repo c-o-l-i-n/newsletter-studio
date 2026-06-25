@@ -76,19 +76,6 @@ const seed: Newsletter = {
   ],
 };
 
-function blankNewsletter(): Newsletter {
-  return {
-    publication: {
-      name: 'Personal Newsletter',
-      location: 'New York, NY',
-      issueLabel: 'Vol. I, Iss. 1',
-      date: CURRENT_MONTH_AND_YEAR,
-    },
-    settings: DEFAULT_SETTINGS,
-    blocks: [],
-  };
-}
-
 // Silence unused-import warnings: emptyDoc is used by makeBlock transitively,
 // but tiptap must be imported before the editor renders. This re-export keeps
 // the import live without lint complaints.
