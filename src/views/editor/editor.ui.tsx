@@ -122,7 +122,7 @@ export function EditorUI({
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <header className="no-print bg-background flex h-10 shrink-0 items-center gap-0.5 border-b px-3">
+      <header className="titlebar no-print bg-background flex shrink-0 items-center gap-0.5 border-b pr-3">
         {/* Brand */}
         <span className="mr-2 flex items-center gap-1.5 text-[13px] font-semibold tracking-tight select-none">
           <News01Icon size={15} className="text-primary" />

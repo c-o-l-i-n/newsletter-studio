@@ -8,6 +8,28 @@
   -webkit-touch-callout: none;
 }
 
+/* Window Controls Overlay: header becomes the OS title bar drag region.
+   env() vars are 0/auto when WCO is not active, so fallbacks keep the
+   layout identical in a normal browser or standalone mode. */
+.titlebar {
+  height: env(titlebar-area-height, 2.5rem);
+  padding-left: env(titlebar-area-x, 0.75rem);
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+
+/* All interactive descendants must opt out of the drag region */
+.titlebar button,
+.titlebar [role='combobox'],
+.titlebar [role='listbox'],
+.titlebar [role='button'],
+.titlebar input,
+.titlebar a,
+.titlebar select {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+
 /* disable selecting text not in a text box */
 :not(input):not(textarea),
 :not(input):not(textarea)::after,
