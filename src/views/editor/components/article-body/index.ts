@@ -1,1 +1,1 @@
-export { ArticleBody } from "./article-body";
+export { ArticleBody } from './article-body';

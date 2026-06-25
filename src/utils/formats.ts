@@ -1,5 +1,5 @@
-import type { FormatDef, FormatId, ImposeOptions, Slot } from "@/types";
-import type { PaperSize } from "@/types/newsletter";
+import type { FormatDef, FormatId, ImposeOptions, Slot } from '@/types';
+import type { PaperSize } from '@/types/newsletter';
 
 const LETTER_LONG = 11;
 const LETTER_SHORT = 8.5;
@@ -17,7 +17,7 @@ function contentSlot(
   margin: number,
   panelIndex: number | null,
   rotate180: boolean,
-  readingNo: number | null
+  readingNo: number | null,
 ): Slot {
   return {
     panelIndex,
@@ -50,8 +50,17 @@ function imposeSaddleStitch(
   pageCount: number,
   opts: ImposeOptions,
   geom: SaddleGeom,
-  fixedFourPanels: boolean
-): { sheets: { label: string; widthIn: number; heightIn: number; foldGuidesX: number[]; slots: Slot[] }[]; oversetPages: number } {
+  fixedFourPanels: boolean,
+): {
+  sheets: {
+    label: string;
+    widthIn: number;
+    heightIn: number;
+    foldGuidesX: number[];
+    slots: Slot[];
+  }[];
+  oversetPages: number;
+} {
   const cellW = geom.pageWidthIn;
   const cellH = geom.pageHeightIn;
   const m = geom.pageMarginIn;
@@ -70,7 +79,7 @@ function imposeSaddleStitch(
       m,
       pageIdx < pageCount ? pageIdx : null,
       rotate,
-      pageIdx + 1
+      pageIdx + 1,
     );
 
   const sheets = [];
@@ -80,7 +89,7 @@ function imposeSaddleStitch(
     let bL = 2 * i + 1;
     let bR = padded - 2 - 2 * i;
     if (opts.backReversed) [bL, bR] = [bR, bL];
-    const suffix = sheetCount > 1 ? ` (sheet ${i + 1}/${sheetCount})` : "";
+    const suffix = sheetCount > 1 ? ` (sheet ${i + 1}/${sheetCount})` : '';
     sheets.push({
       label: `FRONT (outside)${suffix}`,
       widthIn: geom.sheetWidthIn,
@@ -93,23 +102,23 @@ function imposeSaddleStitch(
       widthIn: geom.sheetWidthIn,
       heightIn: geom.sheetHeightIn,
       foldGuidesX: [cellW],
-      slots: [
-        panel(0, bL, opts.rotateBack),
-        panel(cellW, bR, opts.rotateBack),
-      ],
+      slots: [panel(0, bL, opts.rotateBack), panel(cellW, bR, opts.rotateBack)],
     });
   }
   return { sheets, oversetPages };
 }
 
-function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> {
+function buildFormats(
+  LONG: number,
+  SHORT: number,
+): Record<FormatId, FormatDef> {
   const HALF = LONG / 2;
 
   const stapledPortrait: FormatDef = {
-    id: "stapled-portrait",
-    label: "Stapled Portrait",
+    id: 'stapled-portrait',
+    label: 'Stapled Portrait',
     blurb:
-      "Portrait sheets, corner-stapled. Print order = reading order (no imposition). Grows by adding sheets.",
+      'Portrait sheets, corner-stapled. Print order = reading order (no imposition). Grows by adding sheets.',
     pageWidthIn: SHORT,
     pageHeightIn: LONG,
     pageMarginIn: 0.6,
@@ -128,22 +137,36 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
           heightIn: this.sheetHeightIn,
           foldGuidesX: [],
           slots: [
-            contentSlot(0, 0, this.sheetWidthIn, this.sheetHeightIn, m, i, false, i + 1),
+            contentSlot(
+              0,
+              0,
+              this.sheetWidthIn,
+              this.sheetHeightIn,
+              m,
+              i,
+              false,
+              i + 1,
+            ),
           ],
         });
       }
       return { sheets, oversetPages: 0 };
     },
     readingView(pageCount) {
-      return { sheets: this.impose(pageCount, { backReversed: false, rotateBack: false }).sheets };
+      return {
+        sheets: this.impose(pageCount, {
+          backReversed: false,
+          rotateBack: false,
+        }).sheets,
+      };
     },
   };
 
   const trifold: FormatDef = {
-    id: "trifold",
-    label: "Trifold",
+    id: 'trifold',
+    label: 'Trifold',
     blurb:
-      "One landscape sheet, 6 panels, letter-folded. Real imposition + duplex. Fixed capacity (6 panels).",
+      'One landscape sheet, 6 panels, letter-folded. Real imposition + duplex. Fixed capacity (6 panels).',
     pageWidthIn: LONG / 3,
     pageHeightIn: SHORT,
     pageMarginIn: 0.3,
@@ -157,13 +180,39 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
       const cellH = this.pageHeightIn;
       const m = this.pageMarginIn;
       const cell = (col: number, panelIndex: number): Slot =>
-        contentSlot(col * cellW, 0, cellW, cellH, m,
-          panelIndex < pageCount ? panelIndex : null, false, panelIndex + 1);
+        contentSlot(
+          col * cellW,
+          0,
+          cellW,
+          cellH,
+          m,
+          panelIndex < pageCount ? panelIndex : null,
+          false,
+          panelIndex + 1,
+        );
       return {
         sheets: [
-          { label: "Front Cover", widthIn: cellW,              heightIn: cellH, foldGuidesX: [],                   slots: [cell(0, 0)] },
-          { label: "Inside",       widthIn: this.sheetWidthIn, heightIn: cellH, foldGuidesX: [cellW, 2 * cellW],    slots: [cell(0, 1), cell(1, 2), cell(2, 3)] },
-          { label: "Back",         widthIn: 2 * cellW,         heightIn: cellH, foldGuidesX: [cellW],               slots: [cell(0, 4), cell(1, 5)] },
+          {
+            label: 'Front Cover',
+            widthIn: cellW,
+            heightIn: cellH,
+            foldGuidesX: [],
+            slots: [cell(0, 0)],
+          },
+          {
+            label: 'Inside',
+            widthIn: this.sheetWidthIn,
+            heightIn: cellH,
+            foldGuidesX: [cellW, 2 * cellW],
+            slots: [cell(0, 1), cell(1, 2), cell(2, 3)],
+          },
+          {
+            label: 'Back',
+            widthIn: 2 * cellW,
+            heightIn: cellH,
+            foldGuidesX: [cellW],
+            slots: [cell(0, 4), cell(1, 5)],
+          },
         ],
       };
     },
@@ -173,33 +222,44 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
       const m = this.pageMarginIn;
 
       const cell = (col: number, panelIndex: number): Slot =>
-        contentSlot(col * cellW, 0, cellW, cellH, m,
-          panelIndex < pageCount ? panelIndex : null, false, panelIndex + 1);
+        contentSlot(
+          col * cellW,
+          0,
+          cellW,
+          cellH,
+          m,
+          panelIndex < pageCount ? panelIndex : null,
+          false,
+          panelIndex + 1,
+        );
 
       const foldGuidesX = [cellW, 2 * cellW];
       const front = {
-        label: "Sheet — Front (outside)",
+        label: 'Sheet — Front (outside)',
         widthIn: this.sheetWidthIn,
         heightIn: this.sheetHeightIn,
         foldGuidesX,
         slots: [cell(0, 4), cell(1, 5), cell(2, 0)],
       };
       const back = {
-        label: "Sheet — Back (inside)",
+        label: 'Sheet — Back (inside)',
         widthIn: this.sheetWidthIn,
         heightIn: this.sheetHeightIn,
         foldGuidesX,
         slots: [cell(0, 1), cell(1, 2), cell(2, 3)],
       };
-      return { sheets: [front, back], oversetPages: Math.max(0, pageCount - 6) };
+      return {
+        sheets: [front, back],
+        oversetPages: Math.max(0, pageCount - 6),
+      };
     },
   };
 
   const stapledLandscape: FormatDef = {
-    id: "stapled-landscape",
-    label: "Stapled Landscape",
+    id: 'stapled-landscape',
+    label: 'Stapled Landscape',
     blurb:
-      "Landscape sheets, corner-stapled. Print order = reading order (no imposition). Grows by adding sheets.",
+      'Landscape sheets, corner-stapled. Print order = reading order (no imposition). Grows by adding sheets.',
     pageWidthIn: LONG,
     pageHeightIn: SHORT,
     pageMarginIn: 0.6,
@@ -218,22 +278,36 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
           heightIn: this.sheetHeightIn,
           foldGuidesX: [],
           slots: [
-            contentSlot(0, 0, this.sheetWidthIn, this.sheetHeightIn, m, i, false, i + 1),
+            contentSlot(
+              0,
+              0,
+              this.sheetWidthIn,
+              this.sheetHeightIn,
+              m,
+              i,
+              false,
+              i + 1,
+            ),
           ],
         });
       }
       return { sheets, oversetPages: 0 };
     },
     readingView(pageCount) {
-      return { sheets: this.impose(pageCount, { backReversed: false, rotateBack: false }).sheets };
+      return {
+        sheets: this.impose(pageCount, {
+          backReversed: false,
+          rotateBack: false,
+        }).sheets,
+      };
     },
   };
 
   const bifold: FormatDef = {
-    id: "bifold",
-    label: "Bifold",
+    id: 'bifold',
+    label: 'Bifold',
     blurb:
-      "One landscape sheet folded once into 4 half-long panels. Imposition + duplex. Fixed capacity (4 panels).",
+      'One landscape sheet folded once into 4 half-long panels. Imposition + duplex. Fixed capacity (4 panels).',
     pageWidthIn: HALF,
     pageHeightIn: SHORT,
     pageMarginIn: 0.5,
@@ -250,22 +324,49 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
       const cellH = this.pageHeightIn;
       const m = this.pageMarginIn;
       const s = (left: number, idx: number): Slot =>
-        contentSlot(left, 0, cellW, cellH, m, idx < pageCount ? idx : null, false, idx + 1);
+        contentSlot(
+          left,
+          0,
+          cellW,
+          cellH,
+          m,
+          idx < pageCount ? idx : null,
+          false,
+          idx + 1,
+        );
       return {
         sheets: [
-          { label: "Front Cover", widthIn: cellW,      heightIn: cellH, foldGuidesX: [],       slots: [s(0, 0)] },
-          { label: "Inside",       widthIn: 2 * cellW, heightIn: cellH, foldGuidesX: [cellW], slots: [s(0, 1), s(cellW, 2)] },
-          { label: "Back Cover",   widthIn: cellW,      heightIn: cellH, foldGuidesX: [],       slots: [s(0, 3)] },
+          {
+            label: 'Front Cover',
+            widthIn: cellW,
+            heightIn: cellH,
+            foldGuidesX: [],
+            slots: [s(0, 0)],
+          },
+          {
+            label: 'Inside',
+            widthIn: 2 * cellW,
+            heightIn: cellH,
+            foldGuidesX: [cellW],
+            slots: [s(0, 1), s(cellW, 2)],
+          },
+          {
+            label: 'Back Cover',
+            widthIn: cellW,
+            heightIn: cellH,
+            foldGuidesX: [],
+            slots: [s(0, 3)],
+          },
         ],
       };
     },
   };
 
   const booklet: FormatDef = {
-    id: "booklet",
-    label: "Booklet (saddle-stitch)",
+    id: 'booklet',
+    label: 'Booklet (saddle-stitch)',
     blurb:
-      "Half-long pages, saddle-stitched in multiples of 4. Imposition + duplex. Grows by 4 pages.",
+      'Half-long pages, saddle-stitched in multiples of 4. Imposition + duplex. Grows by 4 pages.',
     pageWidthIn: HALF,
     pageHeightIn: SHORT,
     pageMarginIn: 0.5,
@@ -282,13 +383,29 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
       const cellH = this.pageHeightIn;
       const m = this.pageMarginIn;
       const padded = Math.max(4, Math.ceil(pageCount / 4) * 4);
-      const PADDING_BLANK = "Left blank to complete the booklet — pages must come in multiples of 4";
+      const PADDING_BLANK =
+        'Left blank to complete the booklet — pages must come in multiples of 4';
       const slot = (left: number, idx: number): Slot => {
-        const s = contentSlot(left, 0, cellW, cellH, m, idx < pageCount ? idx : null, false, idx + 1);
+        const s = contentSlot(
+          left,
+          0,
+          cellW,
+          cellH,
+          m,
+          idx < pageCount ? idx : null,
+          false,
+          idx + 1,
+        );
         return idx >= pageCount ? { ...s, blankLabel: PADDING_BLANK } : s;
       };
       const sheets = [];
-      sheets.push({ label: "Front Cover", widthIn: cellW, heightIn: cellH, foldGuidesX: [] as number[], slots: [slot(0, 0)] });
+      sheets.push({
+        label: 'Front Cover',
+        widthIn: cellW,
+        heightIn: cellH,
+        foldGuidesX: [] as number[],
+        slots: [slot(0, 0)],
+      });
       for (let i = 1; i < padded - 1; i += 2) {
         sheets.push({
           label: `Pages ${i + 1}–${i + 2}`,
@@ -299,14 +416,20 @@ function buildFormats(LONG: number, SHORT: number): Record<FormatId, FormatDef> 
         });
       }
       const last = padded - 1;
-      sheets.push({ label: "Back Cover", widthIn: cellW, heightIn: cellH, foldGuidesX: [] as number[], slots: [slot(0, last)] });
+      sheets.push({
+        label: 'Back Cover',
+        widthIn: cellW,
+        heightIn: cellH,
+        foldGuidesX: [] as number[],
+        slots: [slot(0, last)],
+      });
       return { sheets };
     },
   };
 
   return {
-    "stapled-portrait": stapledPortrait,
-    "stapled-landscape": stapledLandscape,
+    'stapled-portrait': stapledPortrait,
+    'stapled-landscape': stapledLandscape,
     trifold,
     bifold,
     booklet,
@@ -318,6 +441,6 @@ export const FORMATS = buildFormats(LETTER_LONG, LETTER_SHORT);
 
 /** Returns formats sized for the given paper. Use this for pagination and preview layout. */
 export function getFormats(paperSize: PaperSize): Record<FormatId, FormatDef> {
-  if (paperSize === "a4") return buildFormats(A4_LONG, A4_SHORT);
+  if (paperSize === 'a4') return buildFormats(A4_LONG, A4_SHORT);
   return FORMATS;
 }

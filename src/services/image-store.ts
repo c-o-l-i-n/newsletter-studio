@@ -1,4 +1,4 @@
-import { newId } from "@/utils/ids";
+import { newId } from '@/utils/ids';
 
 interface Entry {
   blob: Blob;
@@ -9,7 +9,7 @@ const store = new Map<string, Entry>();
 
 /** Add a new image, returns its generated id. */
 export function putImage(blob: Blob): string {
-  const id = newId("img");
+  const id = newId('img');
   store.set(id, { blob, url: URL.createObjectURL(blob) });
   return id;
 }
@@ -36,13 +36,13 @@ export function clearImages(): void {
 }
 
 const MIME_EXT: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "image/avif": "avif",
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/avif': 'avif',
 };
 
 export function extForMime(mime: string): string {
-  return MIME_EXT[mime] ?? "bin";
+  return MIME_EXT[mime] ?? 'bin';
 }

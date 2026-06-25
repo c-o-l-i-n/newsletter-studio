@@ -8,7 +8,7 @@ print / Save-as-PDF path.
 
 We chose this over **@react-pdf/renderer**, which produces deterministic, identical-
 everywhere PDFs but lacks float text-wrap, needs manual column balancing, and would force
-a *second* renderer separate from the HTML preview (two code paths to keep in sync). We
+a _second_ renderer separate from the HTML preview (two code paths to keep in sync). We
 also rejected **native CSS print only** (no Paged.js): the browser does not expose
 individual page boxes, making trifold/booklet imposition nearly impossible and page-break
 control weak.

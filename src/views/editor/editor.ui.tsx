@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import type {
   FormatId,
   ImposeOptions,
@@ -7,18 +7,18 @@ import type {
   Newsletter,
   NewsletterSettings,
   Publication,
-} from "@/types";
-import { FORMATS } from "@/utils/formats.ts";
-import { BlockEditor } from "./components/block-editor";
-import { Preview, type PreviewStats } from "./components/preview";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+} from '@/types';
+import { FORMATS } from '@/utils/formats.ts';
+import { BlockEditor } from './components/block-editor';
+import { Preview, type PreviewStats } from './components/preview';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,7 +28,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogContent,
@@ -36,7 +36,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   FileAddIcon,
   FolderOpenIcon,
@@ -49,15 +49,15 @@ import {
   SearchMinusIcon,
   AlertCircleIcon,
   RecordIcon,
-} from "hugeicons-react";
-import { cn } from "@/lib/utils";
+} from 'hugeicons-react';
+import { cn } from '@/lib/utils';
 
-export type SaveState = "saved" | "dirty" | "saving" | "error";
+export type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
 export type PendingAction =
-  | { type: "new" }
-  | { type: "open" }
-  | { type: "restore-crash"; cache: Newsletter };
+  | { type: 'new' }
+  | { type: 'open' }
+  | { type: 'restore-crash'; cache: Newsletter };
 
 export interface EditorUIProps {
   newsletter: Newsletter;
@@ -88,7 +88,7 @@ export interface EditorUIProps {
   onCancelPending: () => void;
 }
 
-const tb = "h-7 text-[12px] focus-visible:ring-0";
+const tb = 'h-7 text-[12px] focus-visible:ring-0';
 
 export function EditorUI({
   newsletter,
@@ -120,11 +120,11 @@ export function EditorUI({
 }: EditorUIProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   return (
-    <div className="flex h-screen flex-col bg-background">
+    <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <header className="no-print flex h-10 shrink-0 items-center gap-0.5 border-b bg-background px-3">
+      <header className="no-print bg-background flex h-10 shrink-0 items-center gap-0.5 border-b px-3">
         {/* Brand */}
-        <span className="mr-2 flex select-none items-center gap-1.5 text-[13px] font-semibold tracking-tight">
+        <span className="mr-2 flex items-center gap-1.5 text-[13px] font-semibold tracking-tight select-none">
           <News01Icon size={15} className="text-primary" />
           Newsletter Studio
         </span>
@@ -132,11 +132,21 @@ export function EditorUI({
         <Separator orientation="vertical" className="mx-1.5" />
 
         {/* File ops */}
-        <Button variant="ghost" size="sm" className={`${tb} gap-1.5`} onClick={onNew}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`${tb} gap-1.5`}
+          onClick={onNew}
+        >
           <FileAddIcon size={13} />
           New
         </Button>
-        <Button variant="ghost" size="sm" className={`${tb} gap-1.5`} onClick={onOpen}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`${tb} gap-1.5`}
+          onClick={onOpen}
+        >
           <FolderOpenIcon size={13} />
           Open…
         </Button>
@@ -147,12 +157,12 @@ export function EditorUI({
           onClick={onSave}
           title={
             fsaSupported
-              ? ""
-              : "Brave disables File System Access — saving downloads a file"
+              ? ''
+              : 'Brave disables File System Access — saving downloads a file'
           }
         >
           <FloppyDiskIcon size={13} />
-          {hasSaveHandle ? "Save" : fsaSupported ? "Save As…" : "Download"}
+          {hasSaveHandle ? 'Save' : fsaSupported ? 'Save As…' : 'Download'}
         </Button>
 
         <Separator orientation="vertical" className="mx-1.5" />
@@ -188,31 +198,41 @@ export function EditorUI({
         <SegmentedControl
           value={newsletter.settings.paperSize}
           options={[
-            { value: "letter", label: "Letter" },
-            { value: "a4", label: "A4" },
+            { value: 'letter', label: 'Letter' },
+            { value: 'a4', label: 'A4' },
           ]}
-          onChange={(v) => onSettings({ paperSize: v as "letter" | "a4" })}
+          onChange={(v) => onSettings({ paperSize: v as 'letter' | 'a4' })}
         />
 
         {/* Image color mode */}
         <SegmentedControl
-          value={newsletter.settings.colorImages ? "color" : "bw"}
+          value={newsletter.settings.colorImages ? 'color' : 'bw'}
           options={[
-            { value: "bw", label: "B&W" },
-            { value: "color", label: "Color" },
+            { value: 'bw', label: 'B&W' },
+            { value: 'color', label: 'Color' },
           ]}
-          onChange={(v) => onSettings({ colorImages: v === "color" })}
+          onChange={(v) => onSettings({ colorImages: v === 'color' })}
         />
 
         {/* Zoom */}
         <div className="ml-1.5 flex items-center">
-          <Button variant="ghost" size="icon-sm" className={tb} onClick={onZoomOut}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className={tb}
+            onClick={onZoomOut}
+          >
             <SearchMinusIcon size={14} />
           </Button>
-          <span className="w-9 text-center text-[11px] tabular-nums text-muted-foreground">
+          <span className="text-muted-foreground w-9 text-center text-[11px] tabular-nums">
             {Math.round(zoom * 100)}%
           </span>
-          <Button variant="ghost" size="icon-sm" className={tb} onClick={onZoomIn}>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className={tb}
+            onClick={onZoomIn}
+          >
             <SearchAddIcon size={14} />
           </Button>
         </div>
@@ -220,7 +240,7 @@ export function EditorUI({
         {/* Status — right side */}
         <div className="ml-auto flex items-center gap-3 text-[11px]">
           <span className="text-muted-foreground">
-            {fileName ?? "new file"} · <SaveBadge state={saveState} />
+            {fileName ?? 'new file'} · <SaveBadge state={saveState} />
           </span>
           {stats.busy && (
             <span className="text-muted-foreground">flowing…</span>
@@ -250,7 +270,7 @@ export function EditorUI({
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
         {/* Sidebar */}
-        <div className="no-print flex w-[400px] shrink-0 flex-col overflow-hidden border-r bg-background">
+        <div className="no-print bg-background flex w-[400px] shrink-0 flex-col overflow-hidden border-r">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -262,7 +282,7 @@ export function EditorUI({
         </div>
 
         {/* Preview — the desk surface */}
-        <div className="preview-pane flex-1 overflow-auto bg-muted p-8">
+        <div className="preview-pane bg-muted flex-1 overflow-auto p-8">
           <Preview
             newsletter={newsletter}
             formatId={formatId}
@@ -306,11 +326,11 @@ function SegmentedControl<T extends string>({
           type="button"
           onClick={() => onChange(opt.value)}
           className={cn(
-            "px-2.5 text-[11px] font-medium transition-colors",
-            i > 0 && "border-l",
+            'px-2.5 text-[11px] font-medium transition-colors',
+            i > 0 && 'border-l',
             value === opt.value
-              ? "bg-foreground text-background"
-              : "bg-background text-muted-foreground hover:bg-muted"
+              ? 'bg-foreground text-background'
+              : 'bg-background text-muted-foreground hover:bg-muted',
           )}
         >
           {opt.label}
@@ -331,75 +351,98 @@ function FullnessGauge({
 }) {
   const isOver = overset > 0;
   return (
-    <div className={cn("flex items-center gap-1.5", isOver && "text-destructive")}>
+    <div
+      className={cn('flex items-center gap-1.5', isOver && 'text-destructive')}
+    >
       <div className="flex gap-[3px]">
         {Array.from({ length: capacity }).map((_, i) => (
           <div
             key={i}
             className={cn(
-              "h-[9px] w-[5px] rounded-[2px] transition-colors",
+              'h-[9px] w-[5px] rounded-[2px] transition-colors',
               i < used
                 ? isOver
-                  ? "bg-destructive"
-                  : "bg-foreground/60"
-                : "bg-border"
+                  ? 'bg-destructive'
+                  : 'bg-foreground/60'
+                : 'bg-border',
             )}
           />
         ))}
       </div>
       <span
         className={cn(
-          "text-[11px] tabular-nums",
-          isOver ? "font-semibold text-destructive" : "text-muted-foreground"
+          'text-[11px] tabular-nums',
+          isOver ? 'text-destructive font-semibold' : 'text-muted-foreground',
         )}
       >
-        {used}/{capacity} panels{isOver ? ` · ${overset} overset` : ""}
+        {used}/{capacity} panels{isOver ? ` · ${overset} overset` : ''}
       </span>
     </div>
   );
 }
 
 function SaveBadge({ state }: { state: SaveState }) {
-  if (state === "saved")
-    return <span className="inline-flex items-center gap-1 text-emerald-600"><RecordIcon size={8} />saved</span>;
-  if (state === "dirty")
-    return <span className="inline-flex items-center gap-1 text-amber-500"><RecordIcon size={8} />unsaved</span>;
-  if (state === "saving")
+  if (state === 'saved')
+    return (
+      <span className="inline-flex items-center gap-1 text-emerald-600">
+        <RecordIcon size={8} />
+        saved
+      </span>
+    );
+  if (state === 'dirty')
+    return (
+      <span className="inline-flex items-center gap-1 text-amber-500">
+        <RecordIcon size={8} />
+        unsaved
+      </span>
+    );
+  if (state === 'saving')
     return <span className="text-muted-foreground">saving…</span>;
-  return <span className="inline-flex items-center gap-1 text-destructive"><AlertCircleIcon size={10} />failed</span>;
+  return (
+    <span className="text-destructive inline-flex items-center gap-1">
+      <AlertCircleIcon size={10} />
+      failed
+    </span>
+  );
 }
 
 const CONFIRM_CONTENT: Record<
-  PendingAction["type"],
-  { title: string; description: string; cancel: string; confirm: string; destructive: boolean }
+  PendingAction['type'],
+  {
+    title: string;
+    description: string;
+    cancel: string;
+    confirm: string;
+    destructive: boolean;
+  }
 > = {
   new: {
-    title: "Start a new newsletter?",
-    description: "Your unsaved changes will be lost.",
-    cancel: "Keep editing",
-    confirm: "Discard & start new",
+    title: 'Start a new newsletter?',
+    description: 'Your unsaved changes will be lost.',
+    cancel: 'Keep editing',
+    confirm: 'Discard & start new',
     destructive: true,
   },
   open: {
-    title: "Open a different file?",
-    description: "Your unsaved changes will be lost.",
-    cancel: "Keep editing",
-    confirm: "Discard & open…",
+    title: 'Open a different file?',
+    description: 'Your unsaved changes will be lost.',
+    cancel: 'Keep editing',
+    confirm: 'Discard & open…',
     destructive: true,
   },
-  "restore-crash": {
-    title: "Restore unsaved work?",
+  'restore-crash': {
+    title: 'Restore unsaved work?',
     description:
-      "A draft from your last session was found. Restore it or start fresh.",
-    cancel: "Start fresh",
-    confirm: "Restore draft",
+      'A draft from your last session was found. Restore it or start fresh.',
+    cancel: 'Start fresh',
+    confirm: 'Restore draft',
     destructive: false,
   },
 };
 
 const PAPER_LABEL: Record<string, string> = {
-  letter: "Letter",
-  a4: "A4",
+  letter: 'Letter',
+  a4: 'A4',
 };
 
 function PrintInstructionsDialog({
@@ -426,23 +469,33 @@ function PrintInstructionsDialog({
         </DialogHeader>
 
         <div className="space-y-1 text-sm">
-          <p className="mb-3 text-muted-foreground text-[13px]">
+          <p className="text-muted-foreground mb-3 text-[13px]">
             Use these settings in your print dialog:
           </p>
-          <PrintRow label="Paper size" value={PAPER_LABEL[paperSize] ?? paperSize} />
+          <PrintRow
+            label="Paper size"
+            value={PAPER_LABEL[paperSize] ?? paperSize}
+          />
           <PrintRow label="Pages per sheet" value="1" />
           <PrintRow label="Margins" value="None" />
           <PrintRow label="Scale" value="100%" />
         </div>
 
         {isDuplex && (
-          <div className="rounded-lg border bg-muted/50 p-3 text-[13px]">
+          <div className="bg-muted/50 rounded-lg border p-3 text-[13px]">
             <div className="flex items-start gap-2">
-              <Files01Icon size={16} className="mt-0.5 shrink-0 text-muted-foreground" />
+              <Files01Icon
+                size={16}
+                className="text-muted-foreground mt-0.5 shrink-0"
+              />
               <div>
                 <p className="font-medium">Double-sided printing</p>
-                <p className="mt-0.5 text-muted-foreground">
-                  Set duplex to <span className="font-semibold text-foreground">Flip on Short Edge</span> so the back prints upright when folded.
+                <p className="text-muted-foreground mt-0.5">
+                  Set duplex to{' '}
+                  <span className="text-foreground font-semibold">
+                    Flip on Short Edge
+                  </span>{' '}
+                  so the back prints upright when folded.
                 </p>
               </div>
             </div>
@@ -475,7 +528,9 @@ function PrintRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 py-1">
       <Tick01Icon size={14} className="shrink-0 text-emerald-600" />
-      <span className="w-24 text-[12px] font-medium text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground w-24 text-[12px] font-medium">
+        {label}
+      </span>
       <span className="text-[13px] font-semibold">{value}</span>
     </div>
   );
@@ -501,12 +556,14 @@ function ConfirmDialog({
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogTitle>{content?.title}</AlertDialogTitle>
-          <AlertDialogDescription>{content?.description}</AlertDialogDescription>
+          <AlertDialogDescription>
+            {content?.description}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{content?.cancel}</AlertDialogCancel>
           <AlertDialogAction
-            variant={content?.destructive ? "destructive" : "default"}
+            variant={content?.destructive ? 'destructive' : 'default'}
             onClick={onConfirm}
           >
             {content?.confirm}

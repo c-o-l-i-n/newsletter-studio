@@ -1,9 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import type { Block, BlockPatch, BlockType, Newsletter, NewsletterSettings, Publication } from "@/types";
-import { DEFAULT_SETTINGS } from "@/types/newsletter";
-import { FORMATS } from "@/utils/formats.ts";
-import { makeBlock } from "@/utils/make-block.ts";
-import { clearImages } from "@/services/image-store.ts";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import type {
+  Block,
+  BlockPatch,
+  BlockType,
+  Newsletter,
+  NewsletterSettings,
+  Publication,
+} from '@/types';
+import { DEFAULT_SETTINGS } from '@/types/newsletter';
+import { FORMATS } from '@/utils/formats.ts';
+import { makeBlock } from '@/utils/make-block.ts';
+import { clearImages } from '@/services/image-store.ts';
 import {
   clearCrashCache,
   downloadNewsletter,
@@ -16,62 +23,65 @@ import {
   saveNewsletterAs,
   writeCrashCache,
   writeToHandle,
-} from "@/services/file-io.ts";
-import { newId } from "@/utils/ids.ts";
-import { emptyDoc } from "@/utils/tiptap.ts";
-import { EditorUI, type SaveState, type PendingAction } from "./editor.ui";
-import type { PreviewStats } from "./components/preview";
+} from '@/services/file-io.ts';
+import { newId } from '@/utils/ids.ts';
+import { emptyDoc } from '@/utils/tiptap.ts';
+import { EditorUI, type SaveState, type PendingAction } from './editor.ui';
+import type { PreviewStats } from './components/preview';
 
-const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', {
+  month: 'long',
+  year: 'numeric',
+});
 
 const seed: Newsletter = {
   publication: {
-    name: "Personal Newsletter",
-    location: "New York, NY",
-    issueLabel: "Vol. I, Iss. 1",
+    name: 'Personal Newsletter',
+    location: 'New York, NY',
+    issueLabel: 'Vol. I, Iss. 1',
     date: CURRENT_MONTH_AND_YEAR,
   },
   settings: DEFAULT_SETTINGS,
   blocks: [
     {
       id: newId(),
-      type: "article",
-      headline: "A Long Drive Up the Coast",
-      byline: "By the Editor",
+      type: 'article',
+      headline: 'A Long Drive Up the Coast',
+      byline: 'By the Editor',
       body: {
-        type: "doc",
+        type: 'doc',
         content: [
           {
-            type: "paragraph",
+            type: 'paragraph',
             content: [
               {
-                type: "text",
-                text: "We packed the truck before dawn and drove north along the coast, stopping wherever a hand-painted sign promised pie or a view. The fog burned off by ten and the whole bay went silver.",
+                type: 'text',
+                text: 'We packed the truck before dawn and drove north along the coast, stopping wherever a hand-painted sign promised pie or a view. The fog burned off by ten and the whole bay went silver.',
               },
             ],
           },
           {
-            type: "paragraph",
+            type: 'paragraph',
             content: [
               {
-                type: "text",
-                text: "I had forgotten how loud a quiet place can be once you stop filling it with a phone. Try the editor toolbar above — bold, italic, a subhead, a pull-quote — and watch the preview reflow.",
+                type: 'text',
+                text: 'I had forgotten how loud a quiet place can be once you stop filling it with a phone. Try the editor toolbar above — bold, italic, a subhead, a pull-quote — and watch the preview reflow.',
               },
             ],
           },
         ],
       },
     },
-    { id: newId(), type: "imageset", images: [] },
+    { id: newId(), type: 'imageset', images: [] },
   ],
 };
 
 function blankNewsletter(): Newsletter {
   return {
     publication: {
-      name: "Personal Newsletter",
-      location: "New York, NY",
-      issueLabel: "Vol. I, Iss. 1",
+      name: 'Personal Newsletter',
+      location: 'New York, NY',
+      issueLabel: 'Vol. I, Iss. 1',
       date: CURRENT_MONTH_AND_YEAR,
     },
     settings: DEFAULT_SETTINGS,
@@ -96,8 +106,10 @@ export function EditorView() {
 
   // ---- persistence ----
   const [fileName, setFileName] = useState<string | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>("saved");
-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>('saved');
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(
+    null,
+  );
   const handleRef = useRef<FileSystemFileHandle | null>(null);
   const firstRun = useRef(true);
   const suppressDirty = useRef(false);
@@ -113,21 +125,21 @@ export function EditorView() {
     }
     if (suppressDirty.current) {
       suppressDirty.current = false;
-      setSaveState(handleRef.current ? "saved" : "dirty");
+      setSaveState(handleRef.current ? 'saved' : 'dirty');
       return;
     }
-    setSaveState("dirty");
+    setSaveState('dirty');
     const t = setTimeout(async () => {
       try {
         await writeCrashCache(nl);
         if (handleRef.current) {
-          setSaveState("saving");
+          setSaveState('saving');
           await writeToHandle(handleRef.current, nl);
-          setSaveState("saved");
+          setSaveState('saved');
         }
       } catch (e) {
         console.error(e);
-        setSaveState("error");
+        setSaveState('error');
       }
     }, 800);
     return () => clearTimeout(t);
@@ -139,7 +151,7 @@ export function EditorView() {
       if (!(await hasCrashCache())) return;
       const cached = await readCrashCache();
       if (cached) {
-        setPendingAction({ type: "restore-crash", cache: cached });
+        setPendingAction({ type: 'restore-crash', cache: cached });
       } else {
         await clearCrashCache();
       }
@@ -180,16 +192,16 @@ export function EditorView() {
   }, []);
 
   const onNew = useCallback(() => {
-    if (saveState !== "saved") {
-      setPendingAction({ type: "new" });
+    if (saveState !== 'saved') {
+      setPendingAction({ type: 'new' });
     } else {
       void doNew();
     }
   }, [saveState, doNew]);
 
   const onOpen = useCallback(() => {
-    if (saveState !== "saved") {
-      setPendingAction({ type: "open" });
+    if (saveState !== 'saved') {
+      setPendingAction({ type: 'open' });
     } else {
       void doOpen();
     }
@@ -198,23 +210,23 @@ export function EditorView() {
   const onSave = useCallback(async () => {
     try {
       if (handleRef.current) {
-        setSaveState("saving");
+        setSaveState('saving');
         await writeToHandle(handleRef.current, nl);
-        setSaveState("saved");
+        setSaveState('saved');
       } else if (fsaSupported) {
         const { handle, name } = await saveNewsletterAs(nl);
         handleRef.current = handle;
         setFileName(name);
-        setSaveState("saved");
+        setSaveState('saved');
       } else {
         const name = await downloadNewsletter(nl);
         setFileName(name);
-        setSaveState("saved");
+        setSaveState('saved');
       }
     } catch (e) {
       if (!isAbortError(e)) {
         console.error(e);
-        setSaveState("error");
+        setSaveState('error');
       }
     }
   }, [nl, fsaSupported]);
@@ -223,11 +235,11 @@ export function EditorView() {
     if (!pendingAction) return;
     const action = pendingAction;
     setPendingAction(null);
-    if (action.type === "new") {
+    if (action.type === 'new') {
       await doNew();
-    } else if (action.type === "open") {
+    } else if (action.type === 'open') {
       await doOpen();
-    } else if (action.type === "restore-crash") {
+    } else if (action.type === 'restore-crash') {
       suppressDirty.current = true;
       setNl(action.cache);
     }
@@ -237,7 +249,7 @@ export function EditorView() {
     if (!pendingAction) return;
     const action = pendingAction;
     setPendingAction(null);
-    if (action.type === "restore-crash") {
+    if (action.type === 'restore-crash') {
       await clearCrashCache();
     }
   }, [pendingAction]);
@@ -245,32 +257,32 @@ export function EditorView() {
   const onPublication = useCallback(
     (patch: Partial<Publication>) =>
       setNl((nl) => ({ ...nl, publication: { ...nl.publication, ...patch } })),
-    []
+    [],
   );
   const onSettings = useCallback(
     (patch: Partial<NewsletterSettings>) =>
       setNl((nl) => ({ ...nl, settings: { ...nl.settings, ...patch } })),
-    []
+    [],
   );
   const onAdd = useCallback(
     (type: BlockType) =>
       setNl((nl) => ({ ...nl, blocks: [...nl.blocks, makeBlock(type)] })),
-    []
+    [],
   );
   const onUpdate = useCallback(
     (id: string, patch: BlockPatch) =>
       setNl((nl) => ({
         ...nl,
         blocks: nl.blocks.map((b) =>
-          b.id === id ? ({ ...b, ...patch } as Block) : b
+          b.id === id ? ({ ...b, ...patch } as Block) : b,
         ),
       })),
-    []
+    [],
   );
   const onRemove = useCallback(
     (id: string) =>
       setNl((nl) => ({ ...nl, blocks: nl.blocks.filter((b) => b.id !== id) })),
-    []
+    [],
   );
   const onMove = useCallback(
     (id: string, dir: -1 | 1) =>
@@ -282,14 +294,14 @@ export function EditorView() {
         [blocks[i], blocks[j]] = [blocks[j], blocks[i]];
         return { ...nl, blocks };
       }),
-    []
+    [],
   );
 
   const fmt = FORMATS[formatId];
 
   const fullness =
     fmt.capacity == null
-      ? `${stats.pageCount} page${stats.pageCount === 1 ? "" : "s"}`
+      ? `${stats.pageCount} page${stats.pageCount === 1 ? '' : 's'}`
       : `${Math.min(stats.pageCount, fmt.capacity)}/${fmt.capacity} panels`;
 
   return (

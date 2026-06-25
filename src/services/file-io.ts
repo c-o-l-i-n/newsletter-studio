@@ -1,8 +1,8 @@
 // File System Access (open/save the .newsletter file directly on disk) plus a
 // silent OPFS crash cache. Chromium assumed (ADR 0003).
 
-import type { Newsletter } from "@/types";
-import { newsletterToZipBlob, zipBlobToNewsletter } from "./newsletter-file";
+import type { Newsletter } from '@/types';
+import { newsletterToZipBlob, zipBlobToNewsletter } from './newsletter-file';
 
 interface FilePickerAcceptType {
   description?: string;
@@ -21,35 +21,35 @@ interface SaveFilePickerOptions {
 declare global {
   interface Window {
     showOpenFilePicker(
-      options?: OpenFilePickerOptions
+      options?: OpenFilePickerOptions,
     ): Promise<FileSystemFileHandle[]>;
     showSaveFilePicker(
-      options?: SaveFilePickerOptions
+      options?: SaveFilePickerOptions,
     ): Promise<FileSystemFileHandle>;
   }
 }
 
 const PICKER_TYPES: FilePickerAcceptType[] = [
   {
-    description: "Newsletter",
-    accept: { "application/x-newsletter+zip": [".newsletter"] },
+    description: 'Newsletter',
+    accept: { 'application/x-newsletter+zip': ['.newsletter'] },
   },
 ];
 
 export const isFileSystemAccessSupported = (): boolean =>
-  typeof window !== "undefined" && "showSaveFilePicker" in window;
+  typeof window !== 'undefined' && 'showSaveFilePicker' in window;
 
 export function suggestedFileName(nl: Newsletter): string {
   const base = `${nl.publication.name} ${nl.publication.issueLabel}`
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-  return `${base || "newsletter"}.newsletter`;
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+  return `${base || 'newsletter'}.newsletter`;
 }
 
 export async function writeToHandle(
   handle: FileSystemFileHandle,
-  nl: Newsletter
+  nl: Newsletter,
 ): Promise<void> {
   const blob = await newsletterToZipBlob(nl);
   const writable = await handle.createWritable();
@@ -72,7 +72,7 @@ export async function openNewsletterFile(): Promise<{
 }
 
 export async function saveNewsletterAs(
-  nl: Newsletter
+  nl: Newsletter,
 ): Promise<{ handle: FileSystemFileHandle; name: string }> {
   const handle = await window.showSaveFilePicker({
     suggestedName: suggestedFileName(nl),
@@ -83,7 +83,7 @@ export async function saveNewsletterAs(
 }
 
 export const isAbortError = (e: unknown): boolean =>
-  e instanceof DOMException && e.name === "AbortError";
+  e instanceof DOMException && e.name === 'AbortError';
 
 // ---- Fallback for browsers without File System Access (e.g. Brave, which
 // disables it by default): plain download to save, file input to open. No
@@ -93,7 +93,7 @@ export async function downloadNewsletter(nl: Newsletter): Promise<string> {
   const blob = await newsletterToZipBlob(nl);
   const name = suggestedFileName(nl);
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = url;
   a.download = name;
   document.body.appendChild(a);
@@ -108,9 +108,9 @@ export function pickNewsletterFile(): Promise<{
   name: string;
 } | null> {
   return new Promise((resolve, reject) => {
-    const i = document.createElement("input");
-    i.type = "file";
-    i.accept = ".newsletter,application/zip";
+    const i = document.createElement('input');
+    i.type = 'file';
+    i.accept = '.newsletter,application/zip';
     i.onchange = async () => {
       const f = i.files?.[0];
       if (!f) {
@@ -129,7 +129,7 @@ export function pickNewsletterFile(): Promise<{
 
 // ---- OPFS crash cache: a silent snapshot so unsaved work survives a crash ----
 
-const CRASH_FILE = "crash-autosave.newsletter";
+const CRASH_FILE = 'crash-autosave.newsletter';
 
 export async function writeCrashCache(nl: Newsletter): Promise<void> {
   try {

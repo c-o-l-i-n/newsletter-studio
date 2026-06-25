@@ -2,16 +2,22 @@
 // manifest.json (publication + blocks, with imageId references) plus the
 // original image bytes under images/. See docs/adr/0003-file-format.md.
 
-import JSZip from "jszip";
-import type { Block, ImageBorder, Newsletter, NewsletterSettings, Publication } from "@/types";
-import { DEFAULT_SETTINGS } from "@/types/newsletter";
-import { newId } from "@/utils/ids";
+import JSZip from 'jszip';
+import type {
+  Block,
+  ImageBorder,
+  Newsletter,
+  NewsletterSettings,
+  Publication,
+} from '@/types';
+import { DEFAULT_SETTINGS } from '@/types/newsletter';
+import { newId } from '@/utils/ids';
 import {
   clearImages,
   extForMime,
   imageBlob,
   putImageWithId,
-} from "./image-store";
+} from './image-store';
 
 const FORMAT_VERSION = 1;
 
@@ -33,7 +39,10 @@ interface Manifest {
 function usedImageIds(nl: Newsletter): string[] {
   const ids = new Set<string>();
   for (const b of nl.blocks) {
-    if (b.type === "imageset") b.images.forEach((i) => { if (i.imageId) ids.add(i.imageId); });
+    if (b.type === 'imageset')
+      b.images.forEach((i) => {
+        if (i.imageId) ids.add(i.imageId);
+      });
   }
   return [...ids];
 }
@@ -46,41 +55,47 @@ function usedImageIds(nl: Newsletter): string[] {
 function migrateBlocks(rawBlocks: any[]): Block[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return rawBlocks.map((b: any): Block => {
-    if (b.type === "photoset") {
+    if (b.type === 'photoset') {
       return {
         id: b.id,
-        type: "imageset",
-        images: (b.photos ?? []).map((p: { id: string; imageId: string; caption: string }) => ({
-          id: p.id,
-          imageId: p.imageId ?? null,
-          caption: p.caption ?? "",
-          border: "single" as ImageBorder,
-        })),
+        type: 'imageset',
+        images: (b.photos ?? []).map(
+          (p: { id: string; imageId: string; caption: string }) => ({
+            id: p.id,
+            imageId: p.imageId ?? null,
+            caption: p.caption ?? '',
+            border: 'single' as ImageBorder,
+          }),
+        ),
       };
     }
-    if (b.type === "ad") {
+    if (b.type === 'ad') {
       return {
         id: b.id,
-        type: "imageset",
-        images: [{
-          id: newId("img"),
-          imageId: b.imageId ?? null,
-          caption: b.caption ?? "",
-          border: "double" as ImageBorder,
-        }],
+        type: 'imageset',
+        images: [
+          {
+            id: newId('img'),
+            imageId: b.imageId ?? null,
+            caption: b.caption ?? '',
+            border: 'double' as ImageBorder,
+          },
+        ],
       };
     }
-    if (b.type === "puzzle") {
-      const caption = [b.title, b.caption].filter(Boolean).join(" — ");
+    if (b.type === 'puzzle') {
+      const caption = [b.title, b.caption].filter(Boolean).join(' — ');
       return {
         id: b.id,
-        type: "imageset",
-        images: [{
-          id: newId("img"),
-          imageId: b.imageId ?? null,
-          caption,
-          border: "single" as ImageBorder,
-        }],
+        type: 'imageset',
+        images: [
+          {
+            id: newId('img'),
+            imageId: b.imageId ?? null,
+            caption,
+            border: 'single' as ImageBorder,
+          },
+        ],
       };
     }
     return b as Block;
@@ -89,7 +104,7 @@ function migrateBlocks(rawBlocks: any[]): Block[] {
 
 export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
   const zip = new JSZip();
-  const folder = zip.folder("images")!;
+  const folder = zip.folder('images')!;
   const images: ImageEntry[] = [];
 
   for (const id of usedImageIds(nl)) {
@@ -108,9 +123,9 @@ export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
     blocks: nl.blocks,
     images,
   };
-  zip.file("manifest.json", JSON.stringify(manifest, null, 2));
+  zip.file('manifest.json', JSON.stringify(manifest, null, 2));
 
-  return zip.generateAsync({ type: "blob" });
+  return zip.generateAsync({ type: 'blob' });
 }
 
 /**
@@ -119,21 +134,21 @@ export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
  */
 export async function zipBlobToNewsletter(blob: Blob): Promise<Newsletter> {
   const zip = await JSZip.loadAsync(blob);
-  const manifestFile = zip.file("manifest.json");
+  const manifestFile = zip.file('manifest.json');
   if (!manifestFile)
-    throw new Error("Not a .newsletter file (manifest.json missing).");
+    throw new Error('Not a .newsletter file (manifest.json missing).');
 
-  const manifest = JSON.parse(await manifestFile.async("string")) as Manifest;
+  const manifest = JSON.parse(await manifestFile.async('string')) as Manifest;
   if (manifest.formatVersion > FORMAT_VERSION)
     throw new Error(
-      `This file was made by a newer version (format ${manifest.formatVersion}).`
+      `This file was made by a newer version (format ${manifest.formatVersion}).`,
     );
 
   clearImages();
   for (const img of manifest.images ?? []) {
     const f = zip.file(img.path);
     if (!f) continue;
-    const raw = await f.async("blob");
+    const raw = await f.async('blob');
     const typed = raw.type
       ? raw
       : new Blob([await raw.arrayBuffer()], { type: img.mime });

@@ -1,11 +1,11 @@
-import type { JSONContent } from "@tiptap/react";
-import type { FormatId } from "./formats";
+import type { JSONContent } from '@tiptap/react';
+import type { FormatId } from './formats';
 
 export type BlockId = string;
 
 export interface ArticleBlock {
   id: BlockId;
-  type: "article";
+  type: 'article';
   headline: string;
   byline: string;
   /** TipTap/ProseMirror document JSON — constrained marks only */
@@ -19,12 +19,12 @@ export interface AdviceItem {
 }
 export interface AdviceBlock {
   id: BlockId;
-  type: "advice";
+  type: 'advice';
   title: string;
   items: AdviceItem[];
 }
 
-export type ImageBorder = "none" | "single" | "double" | "dashed";
+export type ImageBorder = 'none' | 'single' | 'double' | 'dashed';
 
 export interface ImageItem {
   id: string;
@@ -35,16 +35,13 @@ export interface ImageItem {
 }
 export interface ImageSetBlock {
   id: BlockId;
-  type: "imageset";
+  type: 'imageset';
   images: ImageItem[];
 }
 
-export type Block =
-  | ArticleBlock
-  | AdviceBlock
-  | ImageSetBlock;
+export type Block = ArticleBlock | AdviceBlock | ImageSetBlock;
 
-export type BlockType = Block["type"];
+export type BlockType = Block['type'];
 
 // Partial<Block> over a union keeps only common keys (id, type). We want a
 // per-variant partial so block-specific field patches typecheck.
@@ -60,7 +57,7 @@ export interface Publication {
   date: string;
 }
 
-export type PaperSize = "letter" | "a4";
+export type PaperSize = 'letter' | 'a4';
 
 export interface NewsletterSettings {
   formatId: FormatId;
@@ -69,8 +66,8 @@ export interface NewsletterSettings {
 }
 
 export const DEFAULT_SETTINGS: NewsletterSettings = {
-  formatId: "trifold",
-  paperSize: "letter",
+  formatId: 'trifold',
+  paperSize: 'letter',
   colorImages: false,
 };
 

@@ -1,7 +1,7 @@
-import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
-import { articleExtensions } from "@/utils/tiptap.ts";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { useEditor, EditorContent, type JSONContent } from '@tiptap/react';
+import { articleExtensions } from '@/utils/tiptap.ts';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
   TextBoldIcon,
   TextItalicIcon,
@@ -9,7 +9,7 @@ import {
   QuoteUpIcon,
   LeftToRightListDashIcon,
   LeftToRightListNumberIcon,
-} from "hugeicons-react";
+} from 'hugeicons-react';
 
 export function ArticleBody({
   value,
@@ -25,7 +25,7 @@ export function ArticleBody({
     editorProps: {
       attributes: {
         class:
-          "prose-editor min-h-[6rem] rounded-b-md border-x border-b bg-background px-3 py-2 text-[14px] leading-relaxed text-foreground focus:outline-none",
+          'prose-editor min-h-[6rem] rounded-b-md border-x border-b bg-background px-3 py-2 text-[14px] leading-relaxed text-foreground focus:outline-none',
       },
     },
   });
@@ -35,24 +35,24 @@ export function ArticleBody({
   return (
     <div>
       {/* Formatting toolbar */}
-      <div className="flex flex-wrap gap-0.5 rounded-t-md border bg-muted px-1.5 py-1">
+      <div className="bg-muted flex flex-wrap gap-0.5 rounded-t-md border px-1.5 py-1">
         <ToolbarBtn
           title="Bold"
-          active={editor.isActive("bold")}
+          active={editor.isActive('bold')}
           onActivate={() => editor.chain().focus().toggleBold().run()}
         >
           <TextBoldIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Italic"
-          active={editor.isActive("italic")}
+          active={editor.isActive('italic')}
           onActivate={() => editor.chain().focus().toggleItalic().run()}
         >
           <TextItalicIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Subhead"
-          active={editor.isActive("heading", { level: 3 })}
+          active={editor.isActive('heading', { level: 3 })}
           onActivate={() =>
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
@@ -61,21 +61,21 @@ export function ArticleBody({
         </ToolbarBtn>
         <ToolbarBtn
           title="Pull-quote"
-          active={editor.isActive("blockquote")}
+          active={editor.isActive('blockquote')}
           onActivate={() => editor.chain().focus().toggleBlockquote().run()}
         >
           <QuoteUpIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Bullet list"
-          active={editor.isActive("bulletList")}
+          active={editor.isActive('bulletList')}
           onActivate={() => editor.chain().focus().toggleBulletList().run()}
         >
           <LeftToRightListDashIcon size={13} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Numbered list"
-          active={editor.isActive("orderedList")}
+          active={editor.isActive('orderedList')}
           onActivate={() => editor.chain().focus().toggleOrderedList().run()}
         >
           <LeftToRightListNumberIcon size={13} />
@@ -108,10 +108,10 @@ function ToolbarBtn({
         onActivate();
       }}
       className={cn(
-        "h-6 min-w-6 px-1.5 text-[11px]",
+        'h-6 min-w-6 px-1.5 text-[11px]',
         active
-          ? "bg-foreground text-background hover:bg-foreground/80"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          ? 'bg-foreground text-background hover:bg-foreground/80'
+          : 'text-muted-foreground hover:bg-muted hover:text-foreground',
       )}
     >
       {children}

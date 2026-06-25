@@ -1,1 +1,1 @@
-export { EditorView } from "./editor.view";
+export { EditorView } from './editor.view';

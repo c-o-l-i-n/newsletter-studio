@@ -1,4 +1,4 @@
-import type { Sheet } from "@/types";
+import type { Sheet } from '@/types';
 
 function SheetView({
   sheet,
@@ -15,9 +15,7 @@ function SheetView({
 }) {
   return (
     <div className="sheet-group">
-      {showLabel && (
-        <div className="sheet-label">{sheet.label}</div>
-      )}
+      {showLabel && <div className="sheet-label">{sheet.label}</div>}
       <div
         className="sheet"
         style={{ width: `${sheet.widthIn}in`, height: `${sheet.heightIn}in` }}
@@ -34,32 +32,34 @@ function SheetView({
                 top: `${slot.topIn}in`,
                 width: `${slot.widthIn}in`,
                 height: `${slot.heightIn}in`,
-                transform: slot.rotate180 ? "rotate(180deg)" : undefined,
-                transformOrigin: "center center",
+                transform: slot.rotate180 ? 'rotate(180deg)' : undefined,
+                transformOrigin: 'center center',
               }}
             >
               {html != null ? (
                 <div
                   className="nl-content"
                   style={{
-                    height: "100%",
+                    height: '100%',
                     columnCount: columns,
-                    columnGap: "0.22in",
-                    columnFill: "auto",
+                    columnGap: '0.22in',
+                    columnFill: 'auto',
                   }}
                   dangerouslySetInnerHTML={{ __html: html }}
                 />
               ) : (
-                <div className="blank-panel">
-                  {slot.blankLabel ?? null}
-                </div>
+                <div className="blank-panel">{slot.blankLabel ?? null}</div>
               )}
             </div>
           );
         })}
         {showGuides &&
           sheet.foldGuidesX.map((x, i) => (
-            <div key={`f${i}`} className="fold-guide" style={{ left: `${x}in` }} />
+            <div
+              key={`f${i}`}
+              className="fold-guide"
+              style={{ left: `${x}in` }}
+            />
           ))}
       </div>
     </div>
@@ -87,7 +87,7 @@ export function PreviewUI({
   hostRef,
   colorImages,
 }: PreviewUIProps) {
-  const colorClass = colorImages ? "nl-color-images" : undefined;
+  const colorClass = colorImages ? 'nl-color-images' : undefined;
   return (
     <>
       {/* Screen reading view — shows panels in reading/fold order with labels */}

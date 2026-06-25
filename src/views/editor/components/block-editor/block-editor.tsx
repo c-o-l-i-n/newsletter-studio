@@ -1,5 +1,5 @@
-import { Component, createRef, useState } from "react";
-import { ArrowUp02Icon, ArrowDown02Icon, Delete02Icon } from "hugeicons-react";
+import { Component, createRef, useState } from 'react';
+import { ArrowUp02Icon, ArrowDown02Icon, Delete02Icon } from 'hugeicons-react';
 import type {
   AdviceBlock,
   Block,
@@ -9,28 +9,28 @@ import type {
   ImageSetBlock,
   Newsletter,
   Publication,
-} from "@/types";
-import { BLOCK_LABELS } from "@/constants";
-import { newId } from "@/utils/ids.ts";
-import { imageUrl, putImage } from "@/services/image-store.ts";
-import { ArticleBody } from "../article-body";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/types';
+import { BLOCK_LABELS } from '@/constants';
+import { newId } from '@/utils/ids.ts';
+import { imageUrl, putImage } from '@/services/image-store.ts';
+import { ArticleBody } from '../article-body';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,12 +40,12 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 
 function pickImageFile(cb: (file: File) => void) {
-  const i = document.createElement("input");
-  i.type = "file";
-  i.accept = "image/*";
+  const i = document.createElement('input');
+  i.type = 'file';
+  i.accept = 'image/*';
   i.onchange = () => {
     const f = i.files?.[0];
     if (f) cb(f);
@@ -53,7 +53,8 @@ function pickImageFile(cb: (file: File) => void) {
   i.click();
 }
 
-const fieldLabel = "flex-col items-start gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
+const fieldLabel =
+  'flex-col items-start gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground';
 
 export interface BlockEditorProps {
   newsletter: Newsletter;
@@ -68,98 +69,98 @@ export class BlockEditor extends Component<BlockEditorProps> {
   private scrollRef = createRef<HTMLDivElement>();
 
   componentDidUpdate(prevProps: BlockEditorProps) {
-    if (this.props.newsletter.blocks.length > prevProps.newsletter.blocks.length) {
+    if (
+      this.props.newsletter.blocks.length > prevProps.newsletter.blocks.length
+    ) {
       this.scrollRef.current?.scrollTo({
         top: this.scrollRef.current.scrollHeight,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     }
   }
 
   render() {
-    let {
-      newsletter,
-      onPublication,
-      onAdd,
-      onUpdate,
-      onRemove,
-      onMove,
-    } = this.props;
+    let { newsletter, onPublication, onAdd, onUpdate, onRemove, onMove } =
+      this.props;
     const { publication: p, blocks, settings } = newsletter;
     return (
       <div className="flex h-full min-h-0 flex-col">
         <div className="min-h-0 flex-1 overflow-y-auto" ref={this.scrollRef}>
-        <div className="flex flex-col gap-3 p-3">
-          {/* ── Masthead ─────────────────────────────────────────────── */}
-          <Card size="sm">
-            <CardHeader className="border-b border-border pb-2">
-              <CardTitle className="font-semibold uppercase tracking-widest text-muted-foreground">
-                Masthead
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-2">
-                <Label className={`col-span-2 ${fieldLabel}`}>
-                  Publication name
-                  <Input
-                      className="font-bold tracking-normal text-foreground"
+          <div className="flex flex-col gap-3 p-3">
+            {/* ── Masthead ─────────────────────────────────────────────── */}
+            <Card size="sm">
+              <CardHeader className="border-border border-b pb-2">
+                <CardTitle className="text-muted-foreground font-semibold tracking-widest uppercase">
+                  Masthead
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2">
+                  <Label className={`col-span-2 ${fieldLabel}`}>
+                    Publication name
+                    <Input
+                      className="text-foreground font-bold tracking-normal"
                       value={p.name}
-                      onChange={(e) => onPublication({name: e.target.value})}
-                  />
-                </Label>
-                <Label className={fieldLabel}>
-                  Issue
-                  <Input
-                      className="tracking-normal font-normal text-foreground"
+                      onChange={(e) => onPublication({ name: e.target.value })}
+                    />
+                  </Label>
+                  <Label className={fieldLabel}>
+                    Issue
+                    <Input
+                      className="text-foreground font-normal tracking-normal"
                       value={p.issueLabel}
-                      onChange={(e) => onPublication({issueLabel: e.target.value})}
-                  />
-                </Label>
-                <Label className={fieldLabel}>
-                  Date
-                  <Input
-                      className="tracking-normal font-normal text-foreground"
+                      onChange={(e) =>
+                        onPublication({ issueLabel: e.target.value })
+                      }
+                    />
+                  </Label>
+                  <Label className={fieldLabel}>
+                    Date
+                    <Input
+                      className="text-foreground font-normal tracking-normal"
                       value={p.date}
-                      onChange={(e) => onPublication({date: e.target.value})}
-                  />
-                </Label>
-                <Label className={`col-span-2 ${fieldLabel}`}>
-                  Location
-                  <Input
-                      className="tracking-normal font-normal text-foreground"
+                      onChange={(e) => onPublication({ date: e.target.value })}
+                    />
+                  </Label>
+                  <Label className={`col-span-2 ${fieldLabel}`}>
+                    Location
+                    <Input
+                      className="text-foreground font-normal tracking-normal"
                       value={p.location}
-                      onChange={(e) => onPublication({location: e.target.value})}
-                  />
-                </Label>
-              </div>
-            </CardContent>
-          </Card>
+                      onChange={(e) =>
+                        onPublication({ location: e.target.value })
+                      }
+                    />
+                  </Label>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* ── Blocks ───────────────────────────────────────────────── */}
-          {blocks.map((block, i) => (
+            {/* ── Blocks ───────────────────────────────────────────────── */}
+            {blocks.map((block, i) => (
               <BlockCard
-                  key={block.id}
-                  block={block}
-                  first={i === 0}
-                  last={i === blocks.length - 1}
-                  colorImages={settings.colorImages}
-                  onUpdate={onUpdate}
-                  onRemove={onRemove}
-                  onMove={onMove}
+                key={block.id}
+                block={block}
+                first={i === 0}
+                last={i === blocks.length - 1}
+                colorImages={settings.colorImages}
+                onUpdate={onUpdate}
+                onRemove={onRemove}
+                onMove={onMove}
               />
-          ))}
+            ))}
 
-          {blocks.length === 0 && (
-              <p className="py-4 text-center text-[12px] text-muted-foreground">
+            {blocks.length === 0 && (
+              <p className="text-muted-foreground py-4 text-center text-[12px]">
                 No blocks yet — add one below.
               </p>
-          )}
-        </div>
+            )}
+          </div>
         </div>
 
         {/* ── Sticky add-block footer ───────────────────────────────── */}
-        <div className="shrink-0 border-t bg-background px-3 py-2.5">
-          <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <div className="bg-background shrink-0 border-t px-3 py-2.5">
+          <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-widest uppercase">
             Add a block
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -201,8 +202,8 @@ function BlockCard({
   const [pendingRemove, setPendingRemove] = useState(false);
   return (
     <Card size="sm">
-      <CardHeader className="border-b border-border items-center">
-        <CardTitle className="font-semibold uppercase tracking-widest text-muted-foreground">
+      <CardHeader className="border-border items-center border-b">
+        <CardTitle className="text-muted-foreground font-semibold tracking-widest uppercase">
           {BLOCK_LABELS[block.type]}
         </CardTitle>
         <CardAction className="flex items-center gap-0">
@@ -235,25 +236,35 @@ function BlockCard({
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
-        <BlockFields block={block} onUpdate={onUpdate} colorImages={colorImages} />
+        <BlockFields
+          block={block}
+          onUpdate={onUpdate}
+          colorImages={colorImages}
+        />
       </CardContent>
 
       <AlertDialog
         open={pendingRemove}
-        onOpenChange={(open) => { if (!open) setPendingRemove(false); }}
+        onOpenChange={(open) => {
+          if (!open) setPendingRemove(false);
+        }}
       >
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogTitle>Remove this block?</AlertDialogTitle>
             <AlertDialogDescription>
-              The {BLOCK_LABELS[block.type].toLowerCase()} block and all its content will be removed.
+              The {BLOCK_LABELS[block.type].toLowerCase()} block and all its
+              content will be removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={() => { setPendingRemove(false); onRemove(block.id); }}
+              onClick={() => {
+                setPendingRemove(false);
+                onRemove(block.id);
+              }}
             >
               Remove
             </AlertDialogAction>
@@ -274,7 +285,7 @@ function BlockFields({
   colorImages: boolean;
 }) {
   switch (block.type) {
-    case "article":
+    case 'article':
       return (
         <>
           <Input
@@ -294,10 +305,16 @@ function BlockFields({
           />
         </>
       );
-    case "advice":
+    case 'advice':
       return <AdviceFields block={block} onUpdate={onUpdate} />;
-    case "imageset":
-      return <ImageSetFields block={block} onUpdate={onUpdate} colorImages={colorImages} />;
+    case 'imageset':
+      return (
+        <ImageSetFields
+          block={block}
+          onUpdate={onUpdate}
+          colorImages={colorImages}
+        />
+      );
   }
 }
 
@@ -309,7 +326,7 @@ function AdviceFields({
   onUpdate: (id: string, patch: BlockPatch) => void;
 }) {
   const [pendingAdviceId, setPendingAdviceId] = useState<string | null>(null);
-  const setItems = (items: AdviceBlock["items"]) =>
+  const setItems = (items: AdviceBlock['items']) =>
     onUpdate(block.id, { items });
   return (
     <>
@@ -319,7 +336,7 @@ function AdviceFields({
         onChange={(e) => onUpdate(block.id, { title: e.target.value })}
       />
       {block.items.map((it, idx) => (
-        <div key={it.id} className="rounded-lg bg-muted/50 p-2.5">
+        <div key={it.id} className="bg-muted/50 rounded-lg p-2.5">
           <Input
             className="mb-1.5"
             placeholder="Question"
@@ -327,8 +344,8 @@ function AdviceFields({
             onChange={(e) =>
               setItems(
                 block.items.map((x) =>
-                  x.id === it.id ? { ...x, question: e.target.value } : x
-                )
+                  x.id === it.id ? { ...x, question: e.target.value } : x,
+                ),
               )
             }
           />
@@ -339,15 +356,15 @@ function AdviceFields({
             onChange={(e) =>
               setItems(
                 block.items.map((x) =>
-                  x.id === it.id ? { ...x, answer: e.target.value } : x
-                )
+                  x.id === it.id ? { ...x, answer: e.target.value } : x,
+                ),
               )
             }
           />
           <Button
             variant="ghost"
             size="xs"
-            className="mt-1 h-6 text-[11px] text-muted-foreground hover:text-destructive"
+            className="text-muted-foreground hover:text-destructive mt-1 h-6 text-[11px]"
             onClick={() => setPendingAdviceId(it.id)}
           >
             remove Q&A {idx + 1}
@@ -361,7 +378,11 @@ function AdviceFields({
         onClick={() =>
           setItems([
             ...block.items,
-            { id: Math.random().toString(36).slice(2), question: "", answer: "" },
+            {
+              id: Math.random().toString(36).slice(2),
+              question: '',
+              answer: '',
+            },
           ])
         }
       >
@@ -370,7 +391,9 @@ function AdviceFields({
 
       <AlertDialog
         open={pendingAdviceId !== null}
-        onOpenChange={(open) => { if (!open) setPendingAdviceId(null); }}
+        onOpenChange={(open) => {
+          if (!open) setPendingAdviceId(null);
+        }}
       >
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
@@ -400,10 +423,10 @@ function AdviceFields({
 }
 
 const BORDER_LABELS: Record<ImageBorder, string> = {
-  none: "No border",
-  single: "Single border",
-  double: "Double border",
-  dashed: "Dashed border",
+  none: 'No border',
+  single: 'Single border',
+  double: 'Double border',
+  dashed: 'Dashed border',
 };
 
 function ImageSetFields({
@@ -416,10 +439,15 @@ function ImageSetFields({
   colorImages: boolean;
 }) {
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
-  const setImages = (images: ImageSetBlock["images"]) =>
+  const setImages = (images: ImageSetBlock['images']) =>
     onUpdate(block.id, { images });
-  const updateImage = (id: string, patch: Partial<ImageSetBlock["images"][number]>) =>
-    setImages(block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)));
+  const updateImage = (
+    id: string,
+    patch: Partial<ImageSetBlock['images'][number]>,
+  ) =>
+    setImages(
+      block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)),
+    );
   const moveImage = (id: string, dir: -1 | 1) => {
     const i = block.images.findIndex((img) => img.id === id);
     const j = i + dir;
@@ -434,15 +462,15 @@ function ImageSetFields({
       {block.images.map((img, idx) => {
         const url = imageUrl(img.imageId);
         return (
-          <div key={img.id} className="flex gap-2 rounded-lg bg-muted/50 p-2">
+          <div key={img.id} className="bg-muted/50 flex gap-2 rounded-lg p-2">
             {/* Thumbnail — click to replace */}
             <button
               type="button"
-              title={url ? "Click to replace image" : "Click to add image"}
-              className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed border-border text-[10px] text-muted-foreground hover:opacity-80"
+              title={url ? 'Click to replace image' : 'Click to add image'}
+              className="border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80"
               onClick={() =>
                 pickImageFile((file) =>
-                  updateImage(img.id, { imageId: putImage(file) })
+                  updateImage(img.id, { imageId: putImage(file) }),
                 )
               }
             >
@@ -450,7 +478,7 @@ function ImageSetFields({
                 <img
                   src={url}
                   alt=""
-                  className={`h-full w-full object-cover${colorImages ? "" : " grayscale"}`}
+                  className={`h-full w-full object-cover${colorImages ? '' : 'grayscale'}`}
                 />
               ) : (
                 <span>add</span>
@@ -477,7 +505,7 @@ function ImageSetFields({
                     size="sm"
                     className="h-6 w-30 text-xs focus-visible:ring-0"
                   >
-                      {BORDER_LABELS[img.border]}
+                    {BORDER_LABELS[img.border]}
                   </SelectTrigger>
                   <SelectContent>
                     {(Object.keys(BORDER_LABELS) as ImageBorder[]).map((b) => (
@@ -490,7 +518,7 @@ function ImageSetFields({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className="ml-auto size-6 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+                  className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive ml-auto size-6"
                   onClick={() => setPendingRemoveId(img.id)}
                 >
                   <Delete02Icon size={12} />
@@ -503,7 +531,7 @@ function ImageSetFields({
               <Button
                 variant="ghost"
                 size="icon-xs"
-                className="size-6 text-muted-foreground disabled:opacity-30"
+                className="text-muted-foreground size-6 disabled:opacity-30"
                 disabled={idx === 0}
                 onClick={() => moveImage(img.id, -1)}
               >
@@ -512,7 +540,7 @@ function ImageSetFields({
               <Button
                 variant="ghost"
                 size="icon-xs"
-                className="size-6 text-muted-foreground disabled:opacity-30"
+                className="text-muted-foreground size-6 disabled:opacity-30"
                 disabled={idx === block.images.length - 1}
                 onClick={() => moveImage(img.id, 1)}
               >
@@ -531,8 +559,13 @@ function ImageSetFields({
           pickImageFile((file) =>
             setImages([
               ...block.images,
-              { id: newId("img"), imageId: putImage(file), caption: "", border: "single" },
-            ])
+              {
+                id: newId('img'),
+                imageId: putImage(file),
+                caption: '',
+                border: 'single',
+              },
+            ]),
           )
         }
       >
@@ -558,7 +591,9 @@ function ImageSetFields({
               variant="destructive"
               onClick={() => {
                 if (pendingRemoveId) {
-                  setImages(block.images.filter((x) => x.id !== pendingRemoveId));
+                  setImages(
+                    block.images.filter((x) => x.id !== pendingRemoveId),
+                  );
                 }
                 setPendingRemoveId(null);
               }}
@@ -571,4 +606,3 @@ function ImageSetFields({
     </>
   );
 }
-

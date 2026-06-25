@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { ImposeOptions, Newsletter, FormatId } from "@/types";
-import { getFormats } from "@/utils/formats.ts";
-import { newsletterToHTML } from "@/utils/render.ts";
-import { paginate } from "@/services/paginate.ts";
-import { useDebounced } from "@/hooks/use-debounced.ts";
-import { PreviewUI } from "./preview.ui";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ImposeOptions, Newsletter, FormatId } from '@/types';
+import { getFormats } from '@/utils/formats.ts';
+import { newsletterToHTML } from '@/utils/render.ts';
+import { paginate } from '@/services/paginate.ts';
+import { useDebounced } from '@/hooks/use-debounced.ts';
+import { PreviewUI } from './preview.ui';
 
 export interface PreviewStats {
   pageCount: number;
@@ -30,18 +30,25 @@ export function Preview({
   const hostRef = useRef<HTMLDivElement>(null);
   const [panels, setPanels] = useState<string[]>([]);
   const paperSize = newsletter.settings.paperSize;
-  const fmt = useMemo(() => getFormats(paperSize)[formatId], [paperSize, formatId]);
-  const [readingSheets, setReadingSheets] = useState(() => fmt.readingView(0).sheets);
-  const [imposedSheets, setImposedSheets] = useState(() => fmt.impose(0, imposeOpts).sheets);
+  const fmt = useMemo(
+    () => getFormats(paperSize)[formatId],
+    [paperSize, formatId],
+  );
+  const [readingSheets, setReadingSheets] = useState(
+    () => fmt.readingView(0).sheets,
+  );
+  const [imposedSheets, setImposedSheets] = useState(
+    () => fmt.impose(0, imposeOpts).sheets,
+  );
   const contentHTML = useMemo(() => newsletterToHTML(newsletter), [newsletter]);
   const debouncedHTML = useDebounced(contentHTML, 350);
 
   // Keep the print @page in sync with the format's sheet size.
   useEffect(() => {
-    let el = document.getElementById("page-size") as HTMLStyleElement | null;
+    let el = document.getElementById('page-size') as HTMLStyleElement | null;
     if (!el) {
-      el = document.createElement("style");
-      el.id = "page-size";
+      el = document.createElement('style');
+      el.id = 'page-size';
       document.head.appendChild(el);
     }
     el.textContent = `@page { size: ${fmt.sheetWidthIn}in ${fmt.sheetHeightIn}in; margin: 0; }`;

@@ -1,9 +1,9 @@
 export type FormatId =
-  | "stapled-portrait"
-  | "stapled-landscape"
-  | "trifold"
-  | "bifold"
-  | "booklet";
+  | 'stapled-portrait'
+  | 'stapled-landscape'
+  | 'trifold'
+  | 'bifold'
+  | 'booklet';
 
 export interface Slot {
   /** index into the paginated panels array, or null for a blank panel */
@@ -50,7 +50,10 @@ export interface FormatDef {
   capacity: number | null;
   /** true if the format needs duplex + imposition (shows the duplex toggles) */
   duplex: boolean;
-  impose(pageCount: number, opts: ImposeOptions): {
+  impose(
+    pageCount: number,
+    opts: ImposeOptions,
+  ): {
     sheets: Sheet[];
     oversetPages: number;
   };

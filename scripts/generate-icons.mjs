@@ -1,7 +1,7 @@
 // Generates solid-color PNG icons for the PWA manifest.
 // Run with: node scripts/generate-icons.mjs
-import { deflateSync } from "zlib";
-import { writeFileSync, mkdirSync } from "fs";
+import { deflateSync } from 'zlib';
+import { writeFileSync, mkdirSync } from 'fs';
 
 function crc32(buf) {
   const table = new Uint32Array(256);
@@ -16,7 +16,7 @@ function crc32(buf) {
 }
 
 function pngChunk(type, data) {
-  const t = Buffer.from(type, "ascii");
+  const t = Buffer.from(type, 'ascii');
   const d = Buffer.isBuffer(data) ? data : Buffer.from(data);
   const len = Buffer.allocUnsafe(4);
   len.writeUInt32BE(d.length);
@@ -47,16 +47,16 @@ function solidPNG(size, r, g, b) {
 
   return Buffer.concat([
     Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), // PNG sig
-    pngChunk("IHDR", ihdr),
-    pngChunk("IDAT", deflateSync(raw)),
-    pngChunk("IEND", Buffer.alloc(0)),
+    pngChunk('IHDR', ihdr),
+    pngChunk('IDAT', deflateSync(raw)),
+    pngChunk('IEND', Buffer.alloc(0)),
   ]);
 }
 
-mkdirSync("public", { recursive: true });
+mkdirSync('public', { recursive: true });
 
 // slate-900: #0f172a = rgb(15, 23, 42)
-writeFileSync("public/icon-192.png", solidPNG(192, 15, 23, 42));
-writeFileSync("public/icon-512.png", solidPNG(512, 15, 23, 42));
-writeFileSync("public/apple-touch-icon.png", solidPNG(180, 15, 23, 42));
-console.log("Icons written to public/");
+writeFileSync('public/icon-192.png', solidPNG(192, 15, 23, 42));
+writeFileSync('public/icon-512.png', solidPNG(512, 15, 23, 42));
+writeFileSync('public/apple-touch-icon.png', solidPNG(180, 15, 23, 42));
+console.log('Icons written to public/');

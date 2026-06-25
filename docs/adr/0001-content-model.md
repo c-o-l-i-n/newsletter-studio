@@ -1,7 +1,7 @@
 # 0001 — Content model: semantic blocks flowed by format templates
 
 A Newsletter is a flat, ordered list of typed **Blocks** (Article, Advice Column, Photo
-Set, Ad, Puzzle). Each **Format** is a template that *flows* those blocks into its
+Set, Ad, Puzzle). Each **Format** is a template that _flows_ those blocks into its
 panels/pages; the author edits content only and never lays out a page by hand. Switching
 Format re-flows the same blocks.
 

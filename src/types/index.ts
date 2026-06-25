@@ -1,2 +1,2 @@
-export * from "./newsletter";
-export * from "./formats";
+export * from './newsletter';
+export * from './formats';

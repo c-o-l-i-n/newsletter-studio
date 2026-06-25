@@ -1,4 +1,4 @@
-import { Previewer } from "pagedjs";
+import { Previewer } from 'pagedjs';
 
 export interface Paginated {
   /** innerHTML of each panel's flowed content, in reading order */
@@ -23,7 +23,7 @@ export async function paginate(opts: {
   const { contentHTML, pageWidthIn, pageHeightIn, marginIn, columns, host } =
     opts;
 
-  host.innerHTML = "";
+  host.innerHTML = '';
 
   const css = `
     @page {
@@ -38,33 +38,32 @@ export async function paginate(opts: {
   `;
 
   const headStylesBefore = new Set(
-    Array.from(document.head.querySelectorAll("style"))
+    Array.from(document.head.querySelectorAll('style')),
   );
 
   const previewer = new Previewer();
   const flow = await previewer.preview(
     contentHTML,
-    [{ "spike-format.css": css }],
-    host
+    [{ 'spike-format.css': css }],
+    host,
   );
 
   const contentEls = Array.from(
-    host.querySelectorAll<HTMLElement>(".pagedjs_page_content")
+    host.querySelectorAll<HTMLElement>('.pagedjs_page_content'),
   );
   // Unwrap the .nl-content wrapper if Paged.js reproduced it per page, so the
   // imposed slot can re-apply a single clean column context.
   const panels = contentEls.map((el) => {
-    const inner = el.querySelector<HTMLElement>(".nl-content");
+    const inner = el.querySelector<HTMLElement>('.nl-content');
     return (inner ?? el).innerHTML;
   });
 
   // Clean up Paged.js's footprint so it can't fight our print @page.
-  Array.from(document.head.querySelectorAll("style")).forEach((s) => {
+  Array.from(document.head.querySelectorAll('style')).forEach((s) => {
     if (!headStylesBefore.has(s)) s.remove();
   });
-  host.innerHTML = "";
+  host.innerHTML = '';
 
-  const total =
-    (flow as unknown as { total?: number })?.total ?? panels.length;
+  const total = (flow as unknown as { total?: number })?.total ?? panels.length;
   return { panels, pageCount: total };
 }

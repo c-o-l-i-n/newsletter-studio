@@ -1,1 +1,1 @@
-export * from "./block-labels";
+export * from './block-labels';
