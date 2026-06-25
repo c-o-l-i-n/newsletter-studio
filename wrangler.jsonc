@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  "name": "newsletter-studio",
+  "compatibility_date": "2026-06-24",
+  "compatibility_flags": [],
+  "workers_dev": false,
+
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "drop-trailing-slash",
+  },
+
+  "routes": [
+    { "pattern": "newsletterstudio.colinaw.com", "custom_domain": true },
+  ],
+}
