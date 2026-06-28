@@ -44,7 +44,6 @@ import {
   PrinterIcon,
   Tick01Icon,
   Files01Icon,
-  News01Icon,
   SearchAddIcon,
   SearchMinusIcon,
   AlertCircleIcon,
@@ -123,14 +122,6 @@ export function EditorUI({
     <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
       <header className="titlebar no-print bg-background flex shrink-0 items-center gap-0.5 border-b pr-3">
-        {/* Brand */}
-        <span className="mr-2 flex items-center gap-1.5 text-[13px] font-semibold tracking-tight select-none">
-          <News01Icon size={15} className="text-primary" />
-          Newsletter Studio
-        </span>
-
-        <Separator orientation="vertical" className="mx-1.5" />
-
         {/* File ops */}
         <Button
           variant="ghost"
