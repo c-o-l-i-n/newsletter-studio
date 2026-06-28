@@ -19,6 +19,7 @@ export function Preview({
   showGuides,
   zoom,
   onStats,
+  imageRevision,
 }: {
   newsletter: Newsletter;
   formatId: FormatId;
@@ -26,6 +27,7 @@ export function Preview({
   showGuides: boolean;
   zoom: number;
   onStats?: (s: PreviewStats) => void;
+  imageRevision?: number;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [panels, setPanels] = useState<string[]>([]);
@@ -40,7 +42,12 @@ export function Preview({
   const [imposedSheets, setImposedSheets] = useState(
     () => fmt.impose(0, imposeOpts).sheets,
   );
-  const contentHTML = useMemo(() => newsletterToHTML(newsletter), [newsletter]);
+  const contentHTML = useMemo(
+    () => newsletterToHTML(newsletter),
+    // imageRevision busts the cache when async images finish loading
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [newsletter, imageRevision],
+  );
   const debouncedHTML = useDebounced(contentHTML, 350);
 
   // Keep the print @page in sync with the format's sheet size.

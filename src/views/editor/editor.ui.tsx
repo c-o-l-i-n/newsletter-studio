@@ -85,6 +85,7 @@ export interface EditorUIProps {
   onStats: (s: PreviewStats) => void;
   onConfirmPending: () => void;
   onCancelPending: () => void;
+  imageRevision: number;
 }
 
 const tb = 'h-7 text-[12px] focus-visible:ring-0';
@@ -116,6 +117,7 @@ export function EditorUI({
   onStats,
   onConfirmPending,
   onCancelPending,
+  imageRevision,
 }: EditorUIProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
   return (
@@ -281,6 +283,7 @@ export function EditorUI({
             showGuides={true}
             zoom={zoom}
             onStats={onStats}
+            imageRevision={imageRevision}
           />
         </div>
       </div>

@@ -26,8 +26,27 @@ import {
 } from '@/services/file-io.ts';
 import { newId } from '@/utils/ids.ts';
 import { emptyDoc } from '@/utils/tiptap.ts';
+import { putImageWithId } from '@/services/image-store.ts';
+import seedCrosswordImageUrl from '@/assets/crossword.webp?url';
+import seedZuccImageUrl from '@/assets/zucc.webp?url';
 import { EditorUI, type SaveState, type PendingAction } from './editor.ui';
 import type { PreviewStats } from './components/preview';
+
+const SEED_CROSSWORD_IMAGE = 'seed-crossword-image';
+const SEED_ZUCC_IMAGE = 'seed-zucc-image';
+
+function loadSeedImages(onLoaded: () => void): void {
+  const load = (url: string, id: string) =>
+    fetch(url)
+      .then((r) => r.blob())
+      .then((blob) => {
+        putImageWithId(id, blob);
+        onLoaded();
+      })
+      .catch(console.error);
+  void load(seedCrosswordImageUrl, SEED_CROSSWORD_IMAGE);
+  void load(seedZuccImageUrl, SEED_ZUCC_IMAGE);
+}
 
 const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', {
   month: 'long',
@@ -36,9 +55,9 @@ const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', {
 
 const seed: Newsletter = {
   publication: {
-    name: 'Personal Newsletter',
-    location: 'New York, NY',
-    issueLabel: 'Vol. I, Iss. 1',
+    name: 'Newsletter Studio',
+    location: 'Your Town',
+    issueLabel: 'Iss. I, Vol. 1',
     date: CURRENT_MONTH_AND_YEAR,
   },
   settings: DEFAULT_SETTINGS,
@@ -46,8 +65,8 @@ const seed: Newsletter = {
     {
       id: newId(),
       type: 'article',
-      headline: 'A Long Drive Up the Coast',
-      byline: 'By the Editor',
+      headline: 'Welcome to Newsletter Studio',
+      byline: 'Your Desktop Print Shop',
       body: {
         type: 'doc',
         content: [
@@ -56,7 +75,54 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'We packed the truck before dawn and drove north along the coast, stopping wherever a hand-painted sign promised pie or a view. The fog burned off by ten and the whole bay went silver.',
+                text: "Newsletter Studio is a desktop app for writing and printing personal newsletters that you can physically mail, pass out during lunch, or slip under a friend's door.",
+              },
+            ],
+          },
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'What to put in it' }],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: "The best newsletters and don't take themselves too seriously. Write about how many bunnies you saw on your last walk, or about something weird your cat did. Add photos, an advice column, book recommendations, or even a homemade crossword puzzle.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      id: newId(),
+      type: 'imageset',
+      images: [
+        {
+          id: newId('img'),
+          imageId: SEED_CROSSWORD_IMAGE,
+          caption:
+            'A crossword puzzle I made by keyboard mashing on crosswordlabs.com',
+          border: 'single',
+        },
+      ],
+    },
+    {
+      id: newId(),
+      type: 'article',
+      headline: 'Reclaim your relationships',
+      byline: 'Connect in the real world',
+      body: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'The social media apps that were supposed to connect us have made us lonelier than ever. Big Tech harvests our attention, feeds us doom and ragebait, and sells our personal data to advertisers all in an attempt to pump their stock prices and CEO salaries.',
               },
             ],
           },
@@ -65,14 +131,92 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'I had forgotten how loud a quiet place can be once you stop filling it with a phone. Try the editor toolbar above — bold, italic, a subhead, a pull-quote — and watch the preview reflow.',
+                text: "We don't need Big Tech to connect with our loved ones. Writing, printing, and delivering a personal newsletter lets you reclaim your relationships in the real world, without Big Brother or Big Tech.",
               },
             ],
           },
         ],
       },
     },
-    { id: newId(), type: 'imageset', images: [] },
+    {
+      id: newId(),
+      type: 'imageset',
+      images: [
+        {
+          id: newId('img'),
+          imageId: SEED_ZUCC_IMAGE,
+          caption: '',
+          border: 'none',
+        },
+      ],
+    },
+    {
+      id: newId(),
+      type: 'article',
+      headline: 'Focus on writing rather than design',
+      byline: '',
+      body: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'This app deliberately has very few customization options. The whole point is to let you easily write your newsletter so you can get back to living your life. No need to stress over design, font choice, layout, or figuring out how to print each page.',
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Start by editing the publication name and location in the left panel. I love a good alliteration, like "The Colin Chronicles." Add blocks for text (Article) and photos (Image Set), and hit Print when you\'re done.',
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      id: newId(),
+      type: 'article',
+      headline: 'Install this app onto your computer',
+      byline: 'For a nicer experience',
+      body: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'For the best offline, distraction-free experience, I recommend opening this app in Google Chrome (or even better - Brave, which is like Chrome but with better data privacy), and clicking the Install button. This saves the app to your computer for offline use.',
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Be sure to click the Save button when you start to save the file to your computer. The app will then auto-save updates as you go.',
+              },
+            ],
+          },
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'Happy writing!',
+              },
+            ],
+          },
+        ],
+      },
+    },
   ],
 };
 
@@ -85,6 +229,7 @@ export function EditorView() {
   const [nl, setNl] = useState<Newsletter>(seed);
   const formatId = nl.settings.formatId;
   const [zoom, setZoom] = useState(0.7);
+  const [imageRevision, setImageRevision] = useState(0);
   const [stats, setStats] = useState<PreviewStats>({
     pageCount: 0,
     overset: 0,
@@ -131,6 +276,11 @@ export function EditorView() {
     }, 800);
     return () => clearTimeout(t);
   }, [nl]);
+
+  // Load seed images async; bump imageRevision so the preview memo re-runs.
+  useEffect(() => {
+    loadSeedImages(() => setImageRevision((v) => v + 1));
+  }, []);
 
   // On first load, show a dialog to restore an OPFS crash snapshot if present.
   useEffect(() => {
@@ -238,6 +388,9 @@ export function EditorView() {
     setPendingAction(null);
     if (action.type === 'restore-crash') {
       await clearCrashCache();
+      // Re-load seed images using the current setter — the useEffect closure
+      // may be stale after HMR, but useCallback deps are always fresh.
+      loadSeedImages(() => setImageRevision((v) => v + 1));
     }
   }, [pendingAction]);
 
@@ -319,6 +472,7 @@ export function EditorView() {
       onStats={setStats}
       onConfirmPending={onConfirmPending}
       onCancelPending={onCancelPending}
+      imageRevision={imageRevision}
     />
   );
 }
