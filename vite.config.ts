@@ -38,7 +38,7 @@ export default defineConfig({
       },
       workbox: {
         // Cache all app assets including fonts
-        globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2,otf}'],
+        globPatterns: ['**/*.{js,css,html,png,webp,svg,woff,woff2,otf}'],
       },
     }),
   ],
