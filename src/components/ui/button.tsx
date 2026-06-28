@@ -2,22 +2,29 @@ import { Button as ButtonPrimitive } from '@base-ui/react/button';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '@/lib/utils';
+import { sound, type SoundName } from '@/services/sound';
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button relative inline-flex shrink-0 items-center justify-center rounded-[calc(var(--radius)*0.7)] border font-sans font-medium tracking-wide whitespace-nowrap outline-none select-none transition-[transform,box-shadow,filter,background-color] duration-75 focus-visible:ring-3 focus-visible:ring-ring/60 active:not-aria-[haspopup]:translate-y-[2px] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/80',
+        // Polished brass plaque
+        default:
+          'border-[oklch(0.4_0.07_60)] bg-gradient-to-b from-[oklch(0.86_0.13_88)] to-[oklch(0.66_0.12_72)] text-[oklch(0.22_0.05_50)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.5),0_2px_0_oklch(0_0_0_/_0.45),0_4px_8px_oklch(0_0_0_/_0.4)] hover:brightness-110 active:shadow-[inset_0_2px_4px_oklch(0_0_0_/_0.4)]',
+        // Carved wood key
         outline:
-          'border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
+          'border-[oklch(0.5_0.07_72)] bg-gradient-to-b from-[oklch(0.35_0.04_58)] to-[oklch(0.27_0.035_55)] text-foreground shadow-[inset_0_1px_0_oklch(1_0_0_/_0.12),0_2px_0_oklch(0_0_0_/_0.5),0_4px_8px_oklch(0_0_0_/_0.32)] hover:brightness-125 hover:border-[oklch(0.62_0.1_78)] aria-expanded:brightness-125 active:shadow-[inset_0_2px_5px_oklch(0_0_0_/_0.5)]',
+        // Moss enamel
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
+          'border-[oklch(0.32_0.06_148)] bg-gradient-to-b from-[oklch(0.52_0.09_148)] to-[oklch(0.4_0.08_148)] text-[oklch(0.96_0.03_92)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.18),0_2px_0_oklch(0_0_0_/_0.45),0_4px_8px_oklch(0_0_0_/_0.32)] hover:brightness-115 active:shadow-[inset_0_2px_4px_oklch(0_0_0_/_0.45)]',
+        // Subtle: just a wooden hollow that lights up
         ghost:
-          'hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50',
+          'border-transparent text-foreground hover:bg-[oklch(0.34_0.04_58)] hover:border-[oklch(0.5_0.07_72)] aria-expanded:bg-[oklch(0.34_0.04_58)] aria-expanded:border-[oklch(0.5_0.07_72)] active:not-aria-[haspopup]:shadow-[inset_0_2px_4px_oklch(0_0_0_/_0.4)]',
+        // Oxblood danger
         destructive:
-          'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
-        link: 'text-primary underline-offset-4 hover:underline',
+          'border-[oklch(0.32_0.12_26)] bg-gradient-to-b from-[oklch(0.55_0.17_28)] to-[oklch(0.42_0.16_26)] text-[oklch(0.96_0.04_60)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.18),0_2px_0_oklch(0_0_0_/_0.45),0_4px_8px_oklch(0_0_0_/_0.32)] hover:brightness-110 active:shadow-[inset_0_2px_4px_oklch(0_0_0_/_0.45)]',
+        link: 'border-transparent text-primary underline-offset-4 shadow-none hover:underline active:translate-y-0',
       },
       size: {
         default:
@@ -40,16 +47,36 @@ const buttonVariants = cva(
   },
 );
 
+type ButtonProps = ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & {
+    /** Sound played on press. Defaults to a tactile click; null to silence. */
+    sfx?: SoundName | null;
+    /** Whether to chirp on hover. */
+    hoverSound?: boolean;
+  };
+
 function Button({
   className,
   variant = 'default',
   size = 'default',
+  sfx = 'click',
+  hoverSound = true,
+  onPointerDown,
+  onMouseEnter,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
   return (
     <ButtonPrimitive
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
+      onPointerDown={(e) => {
+        if (sfx) sound.play(sfx);
+        onPointerDown?.(e);
+      }}
+      onMouseEnter={(e) => {
+        if (hoverSound) sound.play('hover');
+        onMouseEnter?.(e);
+      }}
       {...props}
     />
   );

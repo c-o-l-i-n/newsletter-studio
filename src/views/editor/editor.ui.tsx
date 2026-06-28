@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type {
   FormatId,
   ImposeOptions,
@@ -48,8 +48,13 @@ import {
   SearchMinusIcon,
   AlertCircleIcon,
   RecordIcon,
+  VolumeHighIcon,
+  VolumeOffIcon,
+  QuillWrite02Icon,
 } from 'hugeicons-react';
 import { cn } from '@/lib/utils';
+import { useMuted } from '@/hooks/use-sound';
+import { sound } from '@/services/sound';
 
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
@@ -120,10 +125,24 @@ export function EditorUI({
   imageRevision,
 }: EditorUIProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+
+  // A clang when a save goes wrong.
+  const prevSaveRef = useRef(saveState);
+  useEffect(() => {
+    if (saveState === 'error' && prevSaveRef.current !== 'error')
+      sound.play('error');
+    prevSaveRef.current = saveState;
+  }, [saveState]);
+
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <header className="titlebar no-print bg-background flex shrink-0 items-center gap-0.5 border-b pr-3">
+      <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b-2 border-[oklch(0.58_0.1_76)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
+        {/* Wordmark */}
+        <span className="font-display text-primary anim-flicker mr-1 hidden items-center gap-1.5 pr-2 pl-1 text-[15px] tracking-wide select-none lg:flex">
+          <QuillWrite02Icon size={16} />
+          Newsletter Studio
+        </span>
         {/* File ops */}
         <Button
           variant="ghost"
@@ -146,6 +165,7 @@ export function EditorUI({
         <Button
           variant="ghost"
           size="sm"
+          sfx="save"
           className={`${tb} gap-1.5`}
           onClick={onSave}
           title={
@@ -231,7 +251,8 @@ export function EditorUI({
         </div>
 
         {/* Status — right side */}
-        <div className="ml-auto flex items-center gap-3 text-[11px]">
+        <div className="font-reading ml-auto flex items-center gap-3 text-[11px]">
+          <MuteToggle />
           <span className="text-muted-foreground">
             {fileName ?? 'new file'} · <SaveBadge state={saveState} />
           </span>
@@ -252,6 +273,7 @@ export function EditorUI({
         {/* Print CTA */}
         <Button
           size="sm"
+          sfx="print"
           className="ml-3 h-7 shrink-0 gap-1.5 text-[12px] font-semibold"
           onClick={() => setShowPrintDialog(true)}
         >
@@ -263,7 +285,7 @@ export function EditorUI({
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
         {/* Sidebar */}
-        <div className="no-print bg-background flex w-[400px] shrink-0 flex-col overflow-hidden border-r">
+        <div className="no-print tex-leather flex w-[400px] shrink-0 flex-col overflow-hidden border-r-2 border-[oklch(0.58_0.1_76)] shadow-[inset_-6px_0_14px_oklch(0_0_0_/_0.35)]">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -275,7 +297,7 @@ export function EditorUI({
         </div>
 
         {/* Preview — the desk surface */}
-        <div className="preview-pane bg-muted flex-1 overflow-auto p-8">
+        <div className="preview-pane tex-wood flex-1 overflow-auto p-8 shadow-[inset_0_10px_28px_oklch(0_0_0_/_0.55)]">
           <Preview
             newsletter={newsletter}
             formatId={formatId}
@@ -313,24 +335,45 @@ function SegmentedControl<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="flex h-7 overflow-hidden rounded-md border">
+    <div className="tex-wood flex h-7 overflow-hidden rounded-[calc(var(--radius)*0.55)] border-2 border-[oklch(0.5_0.07_72)] shadow-[inset_0_1px_3px_oklch(0_0_0_/_0.45)]">
       {options.map((opt, i) => (
         <button
           key={opt.value}
           type="button"
-          onClick={() => onChange(opt.value)}
+          onClick={() => {
+            sound.play('click');
+            onChange(opt.value);
+          }}
+          onMouseEnter={() => sound.play('hover')}
           className={cn(
-            'px-2.5 text-[11px] font-medium transition-colors',
-            i > 0 && 'border-l',
+            'px-2.5 font-sans text-[11px] font-medium transition-all',
+            i > 0 && 'border-l border-[oklch(0.5_0.07_72)]',
             value === opt.value
-              ? 'bg-foreground text-background'
-              : 'bg-background text-muted-foreground hover:bg-muted',
+              ? 'bg-gradient-to-b from-[oklch(0.86_0.13_88)] to-[oklch(0.66_0.12_72)] text-[oklch(0.22_0.05_50)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.4)]'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           {opt.label}
         </button>
       ))}
     </div>
+  );
+}
+
+function MuteToggle() {
+  const [muted, toggle] = useMuted();
+  return (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      sfx={null}
+      hoverSound={false}
+      onClick={toggle}
+      title={muted ? 'Sound off — click for tavern noise' : 'Sound on'}
+      className="text-primary h-7"
+    >
+      {muted ? <VolumeOffIcon size={15} /> : <VolumeHighIcon size={15} />}
+    </Button>
   );
 }
 
@@ -353,12 +396,12 @@ function FullnessGauge({
           <div
             key={i}
             className={cn(
-              'h-[9px] w-[5px] rounded-[2px] transition-colors',
+              'h-[12px] w-[6px] rounded-[2px] border border-[oklch(0.45_0.06_68)] transition-all',
               i < used
                 ? isOver
-                  ? 'bg-destructive'
-                  : 'bg-foreground/60'
-                : 'bg-border',
+                  ? 'bg-gradient-to-t from-[oklch(0.42_0.16_26)] to-[oklch(0.62_0.17_28)] shadow-[0_0_4px_oklch(0.6_0.17_28_/_0.7)]'
+                  : 'bg-gradient-to-t from-[oklch(0.5_0.09_148)] to-[oklch(0.72_0.12_150)] shadow-[0_0_3px_oklch(0.7_0.12_150_/_0.6)]'
+                : 'bg-[oklch(0.2_0.02_55)] shadow-[inset_0_1px_2px_oklch(0_0_0_/_0.55)]',
             )}
           />
         ))}
@@ -411,25 +454,25 @@ const CONFIRM_CONTENT: Record<
   }
 > = {
   new: {
-    title: 'Start a new newsletter?',
-    description: 'Your unsaved changes will be lost.',
-    cancel: 'Keep editing',
-    confirm: 'Discard & start new',
+    title: 'Begin a fresh scroll?',
+    description: 'Any unsaved scribblings will be lost to the ages.',
+    cancel: 'Keep scribbling',
+    confirm: 'Toss it in the fire 🔥',
     destructive: true,
   },
   open: {
-    title: 'Open a different file?',
-    description: 'Your unsaved changes will be lost.',
-    cancel: 'Keep editing',
-    confirm: 'Discard & open…',
+    title: 'Unfurl a different scroll?',
+    description: 'Any unsaved scribblings will be lost to the ages.',
+    cancel: 'Keep scribbling',
+    confirm: 'Abandon & open…',
     destructive: true,
   },
   'restore-crash': {
-    title: 'Restore unsaved work?',
+    title: 'Recover a lost manuscript?',
     description:
-      'A draft from your last session was found. Restore it or start fresh.',
-    cancel: 'Start fresh',
-    confirm: 'Restore draft',
+      'A draft from your last session was found in the cellar. Restore it, or start anew.',
+    cancel: 'Start anew',
+    confirm: 'Recover it!',
     destructive: false,
   },
 };
@@ -458,7 +501,7 @@ function PrintInstructionsDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PrinterIcon size={18} className="text-primary" />
-            How to Print
+            To the Printing Press
           </DialogTitle>
         </DialogHeader>
 
@@ -502,6 +545,7 @@ function PrintInstructionsDialog({
           </DialogClose>
           <Button
             size="sm"
+            sfx="print"
             className="gap-1.5"
             onClick={() => {
               onOpenChange(false);
@@ -558,6 +602,7 @@ function ConfirmDialog({
           <AlertDialogCancel>{content?.cancel}</AlertDialogCancel>
           <AlertDialogAction
             variant={content?.destructive ? 'destructive' : 'default'}
+            sfx={content?.destructive ? 'delete' : 'add'}
             onClick={onConfirm}
           >
             {content?.confirm}

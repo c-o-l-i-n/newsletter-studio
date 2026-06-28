@@ -25,8 +25,8 @@ export default defineConfig({
         short_name: 'Newsletter',
         description:
           'Write and print a vintage-style paper newsletter for family and friends, fully offline',
-        theme_color: '#000000',
-        background_color: '#000000',
+        theme_color: '#2c1a0e',
+        background_color: '#1f1209',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -73,8 +73,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Cache all app assets including fonts
-        globPatterns: ['**/*.{js,css,html,png,webp,svg,woff,woff2,otf}'],
+        // Cache all app assets including fonts, textures, cursors, sounds
+        globPatterns: ['**/*.{js,css,html,png,webp,svg,woff,woff2,otf,mp3}'],
       },
     }),
   ],

@@ -99,7 +99,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                   <Label className={`col-span-2 ${fieldLabel}`}>
                     Publication name
                     <Input
-                      className="text-foreground font-bold tracking-normal"
+                      className="font-bold tracking-normal"
                       value={p.name}
                       onChange={(e) => onPublication({ name: e.target.value })}
                     />
@@ -107,7 +107,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                   <Label className={fieldLabel}>
                     Issue
                     <Input
-                      className="text-foreground font-normal tracking-normal"
+                      className="font-normal tracking-normal"
                       value={p.issueLabel}
                       onChange={(e) =>
                         onPublication({ issueLabel: e.target.value })
@@ -117,7 +117,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                   <Label className={fieldLabel}>
                     Date
                     <Input
-                      className="text-foreground font-normal tracking-normal"
+                      className="font-normal tracking-normal"
                       value={p.date}
                       onChange={(e) => onPublication({ date: e.target.value })}
                     />
@@ -125,7 +125,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                   <Label className={`col-span-2 ${fieldLabel}`}>
                     Location
                     <Input
-                      className="text-foreground font-normal tracking-normal"
+                      className="font-normal tracking-normal"
                       value={p.location}
                       onChange={(e) =>
                         onPublication({ location: e.target.value })
@@ -159,8 +159,8 @@ export class BlockEditor extends Component<BlockEditorProps> {
         </div>
 
         {/* ── Sticky add-block footer ───────────────────────────────── */}
-        <div className="bg-background shrink-0 border-t px-3 py-2.5">
-          <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-widest uppercase">
+        <div className="tex-wood shrink-0 border-t-2 border-[oklch(0.58_0.1_76)] px-3 py-2.5 shadow-[0_-3px_10px_oklch(0_0_0_/_0.4)]">
+          <p className="text-primary font-display mb-2 text-[13px] tracking-wide">
             Add a block
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -169,6 +169,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
                 key={t}
                 size="sm"
                 variant="secondary"
+                sfx="add"
                 className="h-7 text-[11px]"
                 onClick={() => onAdd(t)}
               >
@@ -201,7 +202,7 @@ function BlockCard({
 }) {
   const [pendingRemove, setPendingRemove] = useState(false);
   return (
-    <Card size="sm">
+    <Card size="sm" className="anim-wobble-in">
       <CardHeader className="border-border items-center border-b">
         <CardTitle className="text-muted-foreground font-semibold tracking-widest uppercase">
           {BLOCK_LABELS[block.type]}
@@ -261,6 +262,7 @@ function BlockCard({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              sfx="delete"
               onClick={() => {
                 setPendingRemove(false);
                 onRemove(block.id);
@@ -374,6 +376,7 @@ function AdviceFields({
       <Button
         variant="secondary"
         size="sm"
+        sfx="add"
         className="self-start text-[11px]"
         onClick={() =>
           setItems([
@@ -406,6 +409,7 @@ function AdviceFields({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              sfx="delete"
               onClick={() => {
                 if (pendingAdviceId) {
                   setItems(block.items.filter((x) => x.id !== pendingAdviceId));
@@ -554,6 +558,7 @@ function ImageSetFields({
       <Button
         variant="secondary"
         size="sm"
+        sfx="add"
         className="self-start text-[11px]"
         onClick={() =>
           pickImageFile((file) =>
@@ -589,6 +594,7 @@ function ImageSetFields({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
+              sfx="delete"
               onClick={() => {
                 if (pendingRemoveId) {
                   setImages(

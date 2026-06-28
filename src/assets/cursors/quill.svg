@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- hotspot at tip: 3,29 -->
+  <g fill="none" stroke="#2a1a0e" stroke-width="1.2" stroke-linejoin="round">
+    <!-- nib tip -->
+    <path d="M3 29 L7 25 L9 27 Z" fill="#d9b24a"/>
+    <!-- feather shaft -->
+    <path d="M7 25 L24 6" stroke="#3a2412" stroke-width="1.6"/>
+    <!-- feather plume -->
+    <path d="M24 6 C30 2 31 9 26 11 C30 11 29 17 23 16 C27 18 23 22 19 18 L7 25 Z"
+          fill="#b22222" stroke="#5a0f0f" stroke-width="1"/>
+    <!-- plume vein -->
+    <path d="M23 9 L11 22" stroke="#7a1414" stroke-width="0.8"/>
+  </g>
+</svg>

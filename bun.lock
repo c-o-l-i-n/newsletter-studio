@@ -7,6 +7,9 @@
       "dependencies": {
         "@base-ui/react": "^1.6.0",
         "@fontsource-variable/geist": "^5.2.9",
+        "@fontsource/im-fell-english": "^5.2.6",
+        "@fontsource/medievalsharp": "^5.2.8",
+        "@fontsource/pirata-one": "^5.2.8",
         "@tiptap/html": "^3.27.1",
         "@tiptap/pm": "^3.27.1",
         "@tiptap/react": "^3.27.1",
@@ -327,6 +330,12 @@
     "@floating-ui/utils": ["@floating-ui/utils@0.2.11", "", {}, "sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg=="],
 
     "@fontsource-variable/geist": ["@fontsource-variable/geist@5.2.9", "", {}, "sha512-TP+QSBG3wxKGPE33CbMy/L0Nu3qvJ6Fy81Yc4LnQ95xH+i+cfEp8fyU8/kfV14YwszxIFPhnoMTbjL71waVpyQ=="],
+
+    "@fontsource/im-fell-english": ["@fontsource/im-fell-english@5.2.6", "", {}, "sha512-mVEuyEgLDyaChb0GvQRs5Pyg7SmB0RcPZqR8ub2OnskeiViIieBESRrS4Uovn1hxJ/Dh6xNRaLlmMtPeO8lWRQ=="],
+
+    "@fontsource/medievalsharp": ["@fontsource/medievalsharp@5.2.8", "", {}, "sha512-KD4nShnTLAdnjsQspINuk3EJ5O2WdmFKe5H7L4EqVIOmcoxsjGKWgLfEPWsxUJ8GRinM1dkin8e4xsWZvj2r9A=="],
+
+    "@fontsource/pirata-one": ["@fontsource/pirata-one@5.2.8", "", {}, "sha512-hl3Zqt6mgP+jstHnv2qYc2xQdYM1DSYrpSU9bpS1fYExoGFgJJNbXTPBQ9XivNk9RCKkibhou3iqoOZQOXM48w=="],
 
     "@hono/node-server": ["@hono/node-server@1.19.14", "", { "peerDependencies": { "hono": "^4" } }, "sha512-GwtvgtXxnWsucXvbQXkRgqksiH2Qed37H9xHZocE5sA3N8O8O8/8FA3uclQXxXVzc9XBZuEOMK7+r02FmSpHtw=="],
 

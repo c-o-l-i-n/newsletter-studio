@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- pointing hand for clickables. hotspot at fingertip: 11,2 -->
+  <g stroke="#2a1a0e" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="#e8c98a"
+      d="M9 16 L9 6 C9 4 12 4 12 6 L12 12 L12 9 C12 7 15 7 15 9 L15 12 C15 10 18 10 18 12 L18 13 C18 11 21 11 21 13 L21 21 C21 26 18 29 13 29 C9 29 7 26 6 22 L4 17 C3 14 6 12 8 15 L9 16 Z"/>
+  </g>
+</svg>

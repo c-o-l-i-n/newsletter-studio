@@ -2,6 +2,10 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
+/* Whimsical "dark-wood fantasy tavern" chrome fonts (OFL, bundled offline). */
+@import '@fontsource/pirata-one'; /* blackletter display — titles, plaques */
+@import '@fontsource/medievalsharp'; /* storybook UI face — buttons, labels */
+@import '@fontsource/im-fell-english'; /* aged press serif — accents */
 
 * {
   -webkit-tap-highlight-color: transparent;
@@ -276,6 +280,206 @@ body {
   margin: 0;
 }
 
+/* =========================================================================
+   WHIMSICAL CHROME SKIN (screen only). Textures, cursors, carved bevels,
+   brass hardware and playful motion. None of this leaks into .nl-* (the
+   newsletter) or @media print.
+   ========================================================================= */
+
+/* ---- custom cursors: a quill everywhere, a pointing hand on controls ---- */
+body {
+  cursor:
+    url('./assets/cursors/quill.svg') 3 29,
+    auto;
+  background-color: oklch(0.18 0.025 52);
+  background-image:
+    radial-gradient(
+      ellipse at 50% -10%,
+      oklch(0.3 0.04 60 / 0.7),
+      transparent 60%
+    ),
+    url('./assets/textures/wood.svg');
+  background-size:
+    100% 100%,
+    420px 420px;
+  background-attachment: fixed, fixed;
+}
+button,
+[role='button'],
+[role='combobox'],
+[role='option'],
+a,
+summary,
+label:has(> input[type='checkbox']),
+.cursor-hand {
+  cursor:
+    url('./assets/cursors/hand.svg') 11 2,
+    pointer;
+}
+input,
+textarea,
+[contenteditable='true'],
+[contenteditable='true'] * {
+  cursor: text;
+}
+
+/* ---- texture utility classes ---- */
+.tex-wood {
+  background-color: oklch(0.24 0.03 56);
+  background-image: url('./assets/textures/wood.svg');
+  background-size: 420px 420px;
+}
+.tex-leather {
+  background-color: oklch(0.3 0.05 40);
+  background-image: url('./assets/textures/leather.svg');
+  background-size: 260px 260px;
+}
+.tex-parchment {
+  background-color: var(--parchment);
+  background-image: url('./assets/textures/parchment.svg');
+  background-size: 320px 320px;
+}
+
+/* ---- carved bevels + brass hardware ---- */
+.bevel-raised {
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.18),
+    inset 0 -2px 4px oklch(0 0 0 / 0.4),
+    0 2px 0 oklch(0 0 0 / 0.5),
+    0 4px 10px oklch(0 0 0 / 0.45);
+}
+.bevel-inset {
+  box-shadow:
+    inset 0 2px 5px oklch(0 0 0 / 0.5),
+    inset 0 -1px 0 oklch(1 0 0 / 0.08);
+}
+.brass-frame {
+  border: 2px solid transparent;
+  border-image: linear-gradient(
+      160deg,
+      oklch(0.85 0.13 88),
+      oklch(0.55 0.1 70) 45%,
+      oklch(0.4 0.07 60) 70%,
+      oklch(0.78 0.12 86)
+    )
+    1;
+}
+.brass-rule {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.78 0.12 84 / 0.7) 15%,
+    oklch(0.85 0.14 88) 50%,
+    oklch(0.78 0.12 84 / 0.7) 85%,
+    transparent
+  );
+}
+/* riveted corner studs on framed panels */
+.studded {
+  position: relative;
+}
+.studded::before,
+.studded::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 35% 30%,
+    oklch(0.95 0.05 90),
+    oklch(0.55 0.1 70) 60%,
+    oklch(0.32 0.05 55)
+  );
+  box-shadow: 0 1px 1px oklch(0 0 0 / 0.6);
+}
+.studded::before {
+  left: 6px;
+}
+.studded::after {
+  right: 6px;
+}
+
+/* ---- playful motion ---- */
+@keyframes ns-wobble-in {
+  0% {
+    transform: scale(0.6) rotate(-6deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.06) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes ns-flicker {
+  0%,
+  100% {
+    opacity: 1;
+    filter: drop-shadow(0 0 3px oklch(0.85 0.15 85 / 0.8));
+  }
+  45% {
+    opacity: 0.82;
+    filter: drop-shadow(0 0 1px oklch(0.85 0.15 85 / 0.4));
+  }
+  70% {
+    opacity: 0.95;
+  }
+}
+@keyframes ns-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes ns-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(4px) rotate(1deg);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}
+.anim-wobble-in {
+  animation: ns-wobble-in 0.34s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.anim-flicker {
+  animation: ns-flicker 3.5s ease-in-out infinite;
+}
+.anim-pop {
+  animation: ns-pop 0.3s ease-out;
+}
+.anim-shake {
+  animation: ns-shake 0.4s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-wobble-in,
+  .anim-flicker,
+  .anim-pop,
+  .anim-shake {
+    animation: none !important;
+  }
+}
+
 .paginator-host {
   position: fixed;
   left: -10000px;
@@ -286,6 +490,12 @@ body {
 /* In-editor visual cues. The TipTap contenteditable (.prose-editor) is NOT the
    print theme — these styles just make subhead / quote / lists legible while
    writing, since Tailwind preflight strips list/heading styling. */
+/* Calm canvas: the article editable area stays clean + legible to type in —
+   a parchment page with dark ink, not the wild wood chrome. */
+.prose-editor {
+  font-family: var(--font-reading);
+  color: var(--parchment-ink);
+}
 .prose-editor p {
   margin: 0.3rem 0;
 }
@@ -295,14 +505,14 @@ body {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--color-foreground);
+  color: oklch(0.3 0.05 50);
 }
 .prose-editor blockquote {
   margin: 0.4rem 0;
-  border-left: 3px solid var(--color-border);
+  border-left: 3px solid oklch(0.55 0.08 70);
   padding-left: 0.6rem;
   font-style: italic;
-  color: var(--color-muted-foreground);
+  color: oklch(0.42 0.04 55);
 }
 .prose-editor blockquote p {
   margin: 0;
@@ -438,6 +648,9 @@ body {
     overflow: visible !important;
     padding: 0 !important;
     margin: 0 !important;
+    /* Strip the whimsical wood texture / shadows so only the sheets print. */
+    background: none !important;
+    box-shadow: none !important;
   }
   .sheet-group {
     margin: 0 !important;
@@ -458,8 +671,12 @@ body {
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
+  /* Wild chrome: storybook/blackletter faces drive the UI… */
+  --font-display: 'Pirata One', 'Chomsky', 'Times New Roman', serif;
+  --font-heading: var(--font-display);
+  --font-sans: 'MedievalSharp', 'Pirata One', system-ui, sans-serif;
+  /* …calm canvas: the actual typing surfaces stay clean + legible. */
+  --font-reading: 'Geist Variable', system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -491,6 +708,8 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  --color-parchment: var(--parchment);
+  --color-parchment-ink: var(--parchment-ink);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -500,73 +719,48 @@ body {
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* =========================================================================
+   THE ONE THEME: a dark-wood / fantasy / vintage tavern. No light/dark
+   switching — these tokens always apply. Browns for wood, brass-gold for
+   the primary accent, oxblood for danger, moss green as a secondary accent,
+   aged parchment for editable fields.
+   ========================================================================= */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.23 0.03 58); /* dark stained walnut */
+  --foreground: oklch(0.92 0.045 82); /* warm parchment ink */
+  --card: oklch(0.29 0.035 56); /* lighter carved panel */
+  --card-foreground: oklch(0.92 0.045 82);
+  --popover: oklch(0.27 0.035 54);
+  --popover-foreground: oklch(0.93 0.04 84);
+  --primary: oklch(0.78 0.13 84); /* polished brass / candle gold */
+  --primary-foreground: oklch(0.24 0.05 50); /* dark wood text on brass */
+  --secondary: oklch(0.46 0.08 148); /* moss / forest green */
+  --secondary-foreground: oklch(0.96 0.03 92);
+  --muted: oklch(0.33 0.028 58); /* sunken wood */
+  --muted-foreground: oklch(0.74 0.06 80); /* aged tan */
+  --accent: oklch(0.58 0.11 72); /* worn bronze */
+  --accent-foreground: oklch(0.97 0.02 90);
+  --destructive: oklch(0.52 0.17 26); /* oxblood */
+  --border: oklch(0.44 0.06 68); /* brass edge */
+  --input: oklch(0.5 0.07 72); /* field border (brass) */
+  --ring: oklch(0.8 0.14 84); /* brass glow */
+  --chart-1: oklch(0.78 0.13 84);
+  --chart-2: oklch(0.58 0.11 72);
+  --chart-3: oklch(0.46 0.08 148);
+  --chart-4: oklch(0.52 0.17 26);
+  --chart-5: oklch(0.4 0.05 60);
+  --radius: 0.85rem; /* chunkier carved corners */
+  /* Aged-parchment editable surface (calm canvas) */
+  --parchment: oklch(0.92 0.05 86);
+  --parchment-ink: oklch(0.27 0.04 52);
+  --sidebar: oklch(0.26 0.034 56);
+  --sidebar-foreground: oklch(0.92 0.045 82);
+  --sidebar-primary: oklch(0.78 0.13 84);
+  --sidebar-primary-foreground: oklch(0.24 0.05 50);
+  --sidebar-accent: oklch(0.58 0.11 72);
+  --sidebar-accent-foreground: oklch(0.97 0.02 90);
+  --sidebar-border: oklch(0.44 0.06 68);
+  --sidebar-ring: oklch(0.8 0.14 84);
 }
 
 @layer base {
