@@ -75,14 +75,30 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: "Newsletter Studio is a desktop app for writing and printing personal newsletters that you can physically mail, pass out during lunch, or slip under a friend's door.",
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Newsletter Studio',
+              },
+              {
+                type: 'text',
+                text: " is a desktop app for writing and printing personal newsletters that you can physically mail, pass out during lunch, or slip under a friend's door.",
               },
             ],
           },
           {
             type: 'heading',
-            attrs: { level: 2 },
-            content: [{ type: 'text', text: 'What to put in it' }],
+            attrs: {
+              level: 2,
+            },
+            content: [
+              {
+                type: 'text',
+                text: 'What to put in it',
+              },
+            ],
           },
           {
             type: 'paragraph',
@@ -101,8 +117,8 @@ const seed: Newsletter = {
       type: 'imageset',
       images: [
         {
-          id: newId('img'),
-          imageId: SEED_CROSSWORD_IMAGE,
+          id: 'imgmqy4p5a52',
+          imageId: 'seed-crossword-image',
           caption:
             'A crossword puzzle I made by keyboard mashing on crosswordlabs.com',
           border: 'single',
@@ -127,11 +143,25 @@ const seed: Newsletter = {
             ],
           },
           {
+            type: 'blockquote',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: "We don't need Big Tech to connect with our loved ones.",
+                  },
+                ],
+              },
+            ],
+          },
+          {
             type: 'paragraph',
             content: [
               {
                 type: 'text',
-                text: "We don't need Big Tech to connect with our loved ones. Writing, printing, and delivering a personal newsletter lets you reclaim your relationships in the real world, without Big Brother or Big Tech.",
+                text: 'Writing, printing, and delivering a personal newsletter lets you reclaim your relationships in the real world, without Big Brother or Big Tech.',
               },
             ],
           },
@@ -143,8 +173,8 @@ const seed: Newsletter = {
       type: 'imageset',
       images: [
         {
-          id: newId('img'),
-          imageId: SEED_ZUCC_IMAGE,
+          id: 'imgmqy4p5a55',
+          imageId: 'seed-zucc-image',
           caption: '',
           border: 'none',
         },
@@ -172,7 +202,85 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'Start by editing the publication name and location in the left panel. I love a good alliteration, like "The Colin Chronicles." Add blocks for text (Article) and photos (Image Set), and hit Print when you\'re done.',
+                text: 'Start by editing the ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Publication Name',
+              },
+              {
+                type: 'text',
+                text: ' and ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Location',
+              },
+              {
+                type: 'text',
+                text: ' in the left panel. I love a good alliteration, like ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'italic',
+                  },
+                ],
+                text: 'The Colin Chronicles',
+              },
+              {
+                type: 'text',
+                text: '. Add blocks for text (',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Article',
+              },
+              {
+                type: 'text',
+                text: ') and photos (',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Image Set',
+              },
+              {
+                type: 'text',
+                text: '), and hit ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Print',
+              },
+              {
+                type: 'text',
+                text: " when you're done.",
               },
             ],
           },
@@ -192,7 +300,20 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'For the best offline, distraction-free experience, I recommend opening this app in Google Chrome (or even better - Brave, which is like Chrome but with better data privacy), and clicking the Install button. This saves the app to your computer for offline use.',
+                text: 'For the best offline, distraction-free experience, I recommend opening this app in Google Chrome (or even better - Brave, which is like Chrome but with better data privacy), and clicking the ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Install',
+              },
+              {
+                type: 'text',
+                text: ' button. This saves the app to your computer for offline use.',
               },
             ],
           },
@@ -201,7 +322,20 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'Be sure to click the Save button when you start to save the file to your computer. The app will then auto-save updates as you go. Happy writing!',
+                text: 'Be sure to click the ',
+              },
+              {
+                type: 'text',
+                marks: [
+                  {
+                    type: 'bold',
+                  },
+                ],
+                text: 'Save',
+              },
+              {
+                type: 'text',
+                text: ' button when you start to save the file to your computer. The app will then auto-save updates as you go. Happy writing!',
               },
             ],
           },
@@ -428,6 +562,66 @@ export function EditorView() {
     [],
   );
 
+  const onZoomIn = useCallback(
+    () => setZoom((z) => Math.min(1, +(z + 0.1).toFixed(2))),
+    [],
+  );
+  const onZoomOut = useCallback(
+    () => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2))),
+    [],
+  );
+  const onZoomReset = useCallback(() => setZoom(0.7), []);
+
+  const onSaveAs = useCallback(async () => {
+    if (!fsaSupported) {
+      void onSave();
+      return;
+    }
+    try {
+      const { handle, name } = await saveNewsletterAs(nl);
+      handleRef.current = handle;
+      setFileName(name);
+      setSaveState('saved');
+    } catch (e) {
+      if (!isAbortError(e)) {
+        console.error(e);
+        setSaveState('error');
+      }
+    }
+  }, [nl, fsaSupported, onSave]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        onNew();
+      } else if (e.key === 'o' || e.key === 'O') {
+        e.preventDefault();
+        onOpen();
+      } else if ((e.key === 's' || e.key === 'S') && e.shiftKey) {
+        e.preventDefault();
+        void onSaveAs();
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        void onSave();
+      } else if (e.key === '=' || e.key === '+') {
+        e.preventDefault();
+        onZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        onZoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        onZoomReset();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onNew, onOpen, onSave, onSaveAs, onZoomIn, onZoomOut, onZoomReset]);
+
   const fmt = FORMATS[formatId];
 
   const fullness =
@@ -449,8 +643,8 @@ export function EditorView() {
       fullness={fullness}
       pendingAction={pendingAction}
       onFormatChange={(id) => onSettings({ formatId: id })}
-      onZoomIn={() => setZoom((z) => Math.min(1, +(z + 0.1).toFixed(2)))}
-      onZoomOut={() => setZoom((z) => Math.max(0.3, +(z - 0.1).toFixed(2)))}
+      onZoomIn={onZoomIn}
+      onZoomOut={onZoomOut}
       onNew={onNew}
       onOpen={onOpen}
       onSave={onSave}
