@@ -89,7 +89,7 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: "The best newsletters and don't take themselves too seriously. Write about how many bunnies you saw on your last walk, or about something weird your cat did. Add photos, an advice column, book recommendations, or even a homemade crossword puzzle.",
+                text: "The best newsletters don't take themselves too seriously. Write about how many bunnies you saw during your last walk, or about something weird your cat did. Add photos, memes, an advice column, book recommendations, or even a homemade crossword puzzle.",
               },
             ],
           },
@@ -201,16 +201,7 @@ const seed: Newsletter = {
             content: [
               {
                 type: 'text',
-                text: 'Be sure to click the Save button when you start to save the file to your computer. The app will then auto-save updates as you go.',
-              },
-            ],
-          },
-          {
-            type: 'paragraph',
-            content: [
-              {
-                type: 'text',
-                text: 'Happy writing!',
+                text: 'Be sure to click the Save button when you start to save the file to your computer. The app will then auto-save updates as you go. Happy writing!',
               },
             ],
           },

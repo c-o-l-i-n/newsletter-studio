@@ -32,7 +32,7 @@ export async function paginate(opts: {
     }
     .nl-content {
       column-count: ${columns};
-      column-gap: 0.22in;
+      column-gap: 0.35in;
       column-fill: auto;
     }
   `;

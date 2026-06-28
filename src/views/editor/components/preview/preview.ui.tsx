@@ -42,7 +42,7 @@ function SheetView({
                   style={{
                     height: '100%',
                     columnCount: columns,
-                    columnGap: '0.22in',
+                    columnGap: '0.35in',
                     columnFill: 'auto',
                   }}
                   dangerouslySetInnerHTML={{ __html: html }}
