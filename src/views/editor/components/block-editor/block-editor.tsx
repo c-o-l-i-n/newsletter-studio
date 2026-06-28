@@ -1,5 +1,10 @@
 import { Component, createRef, useState } from 'react';
-import { ArrowUp02Icon, ArrowDown02Icon, Delete02Icon } from 'hugeicons-react';
+import {
+  ArrowUpIcon,
+  ArrowDownIcon,
+  BombIcon,
+  QuillScrollIcon,
+} from '@/components/icons';
 import type {
   AdviceBlock,
   Block,
@@ -13,6 +18,7 @@ import type {
 import { BLOCK_LABELS } from '@/constants';
 import { newId } from '@/utils/ids.ts';
 import { imageUrl, putImage } from '@/services/image-store.ts';
+import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -151,16 +157,19 @@ export class BlockEditor extends Component<BlockEditorProps> {
             ))}
 
             {blocks.length === 0 && (
-              <p className="text-muted-foreground py-4 text-center text-[12px]">
-                No blocks yet — add one below.
-              </p>
+              <div className="text-muted-foreground anim-flicker flex flex-col items-center gap-2 py-8 text-center">
+                <QuillScrollIcon size={40} className="text-primary/70" />
+                <p className="font-heading text-[13px]">
+                  Thy parchment awaits — add a block below.
+                </p>
+              </div>
             )}
           </div>
         </div>
 
         {/* ── Sticky add-block footer ───────────────────────────────── */}
         <div className="tex-wood shrink-0 border-t-2 border-[oklch(0.58_0.1_76)] px-3 py-2.5 shadow-[0_-3px_10px_oklch(0_0_0_/_0.4)]">
-          <p className="text-primary font-display mb-2 text-[13px] tracking-wide">
+          <p className="text-primary font-heading mb-2 text-[14px] font-semibold tracking-wide">
             Add a block
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -215,7 +224,7 @@ function BlockCard({
             disabled={first}
             onClick={() => onMove(block.id, -1)}
           >
-            <ArrowUp02Icon size={15} />
+            <ArrowUpIcon size={16} />
           </Button>
           <Button
             variant="ghost"
@@ -224,7 +233,7 @@ function BlockCard({
             disabled={last}
             onClick={() => onMove(block.id, 1)}
           >
-            <ArrowDown02Icon size={15} />
+            <ArrowDownIcon size={16} />
           </Button>
           <Button
             variant="ghost"
@@ -232,7 +241,7 @@ function BlockCard({
             className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
             onClick={() => setPendingRemove(true)}
           >
-            <Delete02Icon size={15} />
+            <BombIcon size={16} />
           </Button>
         </CardAction>
       </CardHeader>
@@ -263,7 +272,8 @@ function BlockCard({
             <AlertDialogAction
               variant="destructive"
               sfx="delete"
-              onClick={() => {
+              onClick={(e) => {
+                boomAt(e.currentTarget);
                 setPendingRemove(false);
                 onRemove(block.id);
               }}
@@ -410,7 +420,8 @@ function AdviceFields({
             <AlertDialogAction
               variant="destructive"
               sfx="delete"
-              onClick={() => {
+              onClick={(e) => {
+                boomAt(e.currentTarget);
                 if (pendingAdviceId) {
                   setItems(block.items.filter((x) => x.id !== pendingAdviceId));
                 }
@@ -525,7 +536,7 @@ function ImageSetFields({
                   className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive ml-auto size-6"
                   onClick={() => setPendingRemoveId(img.id)}
                 >
-                  <Delete02Icon size={12} />
+                  <BombIcon size={13} />
                 </Button>
               </div>
             </div>
@@ -539,7 +550,7 @@ function ImageSetFields({
                 disabled={idx === 0}
                 onClick={() => moveImage(img.id, -1)}
               >
-                <ArrowUp02Icon size={12} />
+                <ArrowUpIcon size={13} />
               </Button>
               <Button
                 variant="ghost"
@@ -548,7 +559,7 @@ function ImageSetFields({
                 disabled={idx === block.images.length - 1}
                 onClick={() => moveImage(img.id, 1)}
               >
-                <ArrowDown02Icon size={12} />
+                <ArrowDownIcon size={13} />
               </Button>
             </div>
           </div>
@@ -595,7 +606,8 @@ function ImageSetFields({
             <AlertDialogAction
               variant="destructive"
               sfx="delete"
-              onClick={() => {
+              onClick={(e) => {
+                boomAt(e.currentTarget);
                 if (pendingRemoveId) {
                   setImages(
                     block.images.filter((x) => x.id !== pendingRemoveId),

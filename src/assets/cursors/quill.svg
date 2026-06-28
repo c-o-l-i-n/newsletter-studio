@@ -1,14 +1,27 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <!-- hotspot at tip: 3,29 -->
-  <g fill="none" stroke="#2a1a0e" stroke-width="1.2" stroke-linejoin="round">
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">
+  <!-- hotspot at nib tip: 3,31 -->
+  <g stroke="#2a1a0e" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round">
     <!-- nib tip -->
-    <path d="M3 29 L7 25 L9 27 Z" fill="#d9b24a"/>
-    <!-- feather shaft -->
-    <path d="M7 25 L24 6" stroke="#3a2412" stroke-width="1.6"/>
-    <!-- feather plume -->
-    <path d="M24 6 C30 2 31 9 26 11 C30 11 29 17 23 16 C27 18 23 22 19 18 L7 25 Z"
-          fill="#b22222" stroke="#5a0f0f" stroke-width="1"/>
-    <!-- plume vein -->
-    <path d="M23 9 L11 22" stroke="#7a1414" stroke-width="0.8"/>
+    <path d="M3 31 L8 26 L10 28 Z" fill="#e6c24f"/>
+    <!-- shaft -->
+    <path d="M8 26 L23 8" fill="none" stroke="#3a2412" stroke-width="2"/>
+    <!-- full plume: a fat teardrop with barbs -->
+    <path d="M23 8
+             C28 0 34 3 32 9
+             C36 11 33 17 28 16
+             C32 19 28 25 22 21
+             C24 25 18 27 16 21
+             L8 26 Z"
+          fill="#c62828" stroke="#5a0f0f" stroke-width="1.1"/>
+    <!-- central vein -->
+    <path d="M27 8 L12 23" fill="none" stroke="#7a1414" stroke-width="1"/>
+    <!-- a few barbs for a feathery look -->
+    <g stroke="#8a1a1a" stroke-width="0.7">
+      <path d="M24 11 L20 12"/>
+      <path d="M22 14 L18 15"/>
+      <path d="M20 17 L16 18"/>
+      <path d="M26 13 L30 12"/>
+      <path d="M24 16 L28 16"/>
+    </g>
   </g>
 </svg>

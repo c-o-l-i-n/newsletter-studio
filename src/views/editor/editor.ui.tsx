@@ -38,20 +38,19 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import {
-  FileAddIcon,
-  FolderOpenIcon,
-  FloppyDiskIcon,
-  PrinterIcon,
-  Tick01Icon,
-  Files01Icon,
-  SearchAddIcon,
-  SearchMinusIcon,
-  AlertCircleIcon,
-  RecordIcon,
-  VolumeHighIcon,
-  VolumeOffIcon,
-  QuillWrite02Icon,
-} from 'hugeicons-react';
+  NewIcon,
+  OpenIcon,
+  SaveIcon,
+  PrintIcon,
+  CheckIcon,
+  PagesIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+  AlertIcon,
+  DotIcon,
+  SoundOnIcon,
+  SoundOffIcon,
+} from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useMuted } from '@/hooks/use-sound';
 import { sound } from '@/services/sound';
@@ -134,15 +133,22 @@ export function EditorUI({
     prevSaveRef.current = saveState;
   }, [saveState]);
 
+  // Ctrl/Cmd+P opens our print dialog instead of the browser's.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        setShowPrintDialog(true);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b-2 border-[oklch(0.58_0.1_76)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
-        {/* Wordmark */}
-        <span className="font-display text-primary anim-flicker mr-1 hidden items-center gap-1.5 pr-2 pl-1 text-[15px] tracking-wide select-none lg:flex">
-          <QuillWrite02Icon size={16} />
-          Newsletter Studio
-        </span>
+      <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b-2 border-[oklch(0.46_0.07_70)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
         {/* File ops */}
         <Button
           variant="ghost"
@@ -150,7 +156,7 @@ export function EditorUI({
           className={`${tb} gap-1.5`}
           onClick={onNew}
         >
-          <FileAddIcon size={13} />
+          <NewIcon size={14} />
           New
         </Button>
         <Button
@@ -159,7 +165,7 @@ export function EditorUI({
           className={`${tb} gap-1.5`}
           onClick={onOpen}
         >
-          <FolderOpenIcon size={13} />
+          <OpenIcon size={14} />
           Open…
         </Button>
         <Button
@@ -174,11 +180,11 @@ export function EditorUI({
               : 'Brave disables File System Access — saving downloads a file'
           }
         >
-          <FloppyDiskIcon size={13} />
+          <SaveIcon size={14} />
           {hasSaveHandle ? 'Save' : fsaSupported ? 'Save As…' : 'Download'}
         </Button>
 
-        <Separator orientation="vertical" className="mx-1.5" />
+        <Separator orientation="vertical" className="mx-1.5 !h-4 self-center" />
 
         {/* Format selector */}
         <Select
@@ -205,7 +211,7 @@ export function EditorUI({
           </SelectContent>
         </Select>
 
-        <Separator orientation="vertical" className="mx-1.5" />
+        <Separator orientation="vertical" className="mx-1.5 !h-4 self-center" />
 
         {/* Paper size */}
         <SegmentedControl
@@ -235,7 +241,7 @@ export function EditorUI({
             className={tb}
             onClick={onZoomOut}
           >
-            <SearchMinusIcon size={14} />
+            <ZoomOutIcon size={15} />
           </Button>
           <span className="text-muted-foreground w-9 text-center text-[11px] tabular-nums">
             {Math.round(zoom * 100)}%
@@ -246,12 +252,12 @@ export function EditorUI({
             className={tb}
             onClick={onZoomIn}
           >
-            <SearchAddIcon size={14} />
+            <ZoomInIcon size={15} />
           </Button>
         </div>
 
         {/* Status — right side */}
-        <div className="font-reading ml-auto flex items-center gap-3 text-[11px]">
+        <div className="ml-auto flex items-center gap-3 font-sans text-[12px]">
           <MuteToggle />
           <span className="text-muted-foreground">
             {fileName ?? 'new file'} · <SaveBadge state={saveState} />
@@ -277,7 +283,7 @@ export function EditorUI({
           className="ml-3 h-7 shrink-0 gap-1.5 text-[12px] font-semibold"
           onClick={() => setShowPrintDialog(true)}
         >
-          <PrinterIcon size={13} />
+          <PrintIcon size={14} />
           Print / PDF
         </Button>
       </header>
@@ -285,7 +291,7 @@ export function EditorUI({
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
         {/* Sidebar */}
-        <div className="no-print tex-leather flex w-[400px] shrink-0 flex-col overflow-hidden border-r-2 border-[oklch(0.58_0.1_76)] shadow-[inset_-6px_0_14px_oklch(0_0_0_/_0.35)]">
+        <div className="no-print tex-leather flex w-[400px] shrink-0 flex-col overflow-hidden border-r-2 border-[oklch(0.42_0.06_68)] shadow-[inset_-6px_0_14px_oklch(0_0_0_/_0.35)]">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -344,7 +350,6 @@ function SegmentedControl<T extends string>({
             sound.play('click');
             onChange(opt.value);
           }}
-          onMouseEnter={() => sound.play('hover')}
           className={cn(
             'px-2.5 font-sans text-[11px] font-medium transition-all',
             i > 0 && 'border-l border-[oklch(0.5_0.07_72)]',
@@ -367,12 +372,11 @@ function MuteToggle() {
       variant="ghost"
       size="icon-sm"
       sfx={null}
-      hoverSound={false}
       onClick={toggle}
       title={muted ? 'Sound off — click for tavern noise' : 'Sound on'}
       className="text-primary h-7"
     >
-      {muted ? <VolumeOffIcon size={15} /> : <VolumeHighIcon size={15} />}
+      {muted ? <SoundOffIcon size={16} /> : <SoundOnIcon size={16} />}
     </Button>
   );
 }
@@ -422,14 +426,14 @@ function SaveBadge({ state }: { state: SaveState }) {
   if (state === 'saved')
     return (
       <span className="inline-flex items-center gap-1 text-emerald-600">
-        <RecordIcon size={8} />
+        <DotIcon size={8} />
         saved
       </span>
     );
   if (state === 'dirty')
     return (
       <span className="inline-flex items-center gap-1 text-amber-500">
-        <RecordIcon size={8} />
+        <DotIcon size={8} />
         unsaved
       </span>
     );
@@ -437,7 +441,7 @@ function SaveBadge({ state }: { state: SaveState }) {
     return <span className="text-muted-foreground">saving…</span>;
   return (
     <span className="text-destructive inline-flex items-center gap-1">
-      <AlertCircleIcon size={10} />
+      <AlertIcon size={12} />
       failed
     </span>
   );
@@ -454,25 +458,25 @@ const CONFIRM_CONTENT: Record<
   }
 > = {
   new: {
-    title: 'Begin a fresh scroll?',
-    description: 'Any unsaved scribblings will be lost to the ages.',
-    cancel: 'Keep scribbling',
-    confirm: 'Toss it in the fire 🔥',
+    title: 'Start a new newsletter?',
+    description: 'Your unsaved changes will be lost.',
+    cancel: 'Keep editing',
+    confirm: 'Discard & start new',
     destructive: true,
   },
   open: {
-    title: 'Unfurl a different scroll?',
-    description: 'Any unsaved scribblings will be lost to the ages.',
-    cancel: 'Keep scribbling',
-    confirm: 'Abandon & open…',
+    title: 'Open a different file?',
+    description: 'Your unsaved changes will be lost.',
+    cancel: 'Keep editing',
+    confirm: 'Discard & open',
     destructive: true,
   },
   'restore-crash': {
-    title: 'Recover a lost manuscript?',
+    title: 'Restore unsaved work?',
     description:
-      'A draft from your last session was found in the cellar. Restore it, or start anew.',
-    cancel: 'Start anew',
-    confirm: 'Recover it!',
+      'A draft from your last session was found. Restore it or start fresh.',
+    cancel: 'Start fresh',
+    confirm: 'Restore draft',
     destructive: false,
   },
 };
@@ -500,7 +504,7 @@ function PrintInstructionsDialog({
       <DialogContent className="sm:max-w-sm" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PrinterIcon size={18} className="text-primary" />
+            <PrintIcon size={18} className="text-primary" />
             To the Printing Press
           </DialogTitle>
         </DialogHeader>
@@ -521,7 +525,7 @@ function PrintInstructionsDialog({
         {isDuplex && (
           <div className="bg-muted/50 rounded-lg border p-3 text-[13px]">
             <div className="flex items-start gap-2">
-              <Files01Icon
+              <PagesIcon
                 size={16}
                 className="text-muted-foreground mt-0.5 shrink-0"
               />
@@ -545,7 +549,6 @@ function PrintInstructionsDialog({
           </DialogClose>
           <Button
             size="sm"
-            sfx="print"
             className="gap-1.5"
             onClick={() => {
               onOpenChange(false);
@@ -553,7 +556,7 @@ function PrintInstructionsDialog({
               setTimeout(() => window.print(), 150);
             }}
           >
-            <PrinterIcon size={13} />
+            <PrintIcon size={14} />
             Print Now
           </Button>
         </DialogFooter>
@@ -565,7 +568,10 @@ function PrintInstructionsDialog({
 function PrintRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 py-1">
-      <Tick01Icon size={14} className="shrink-0 text-emerald-600" />
+      <CheckIcon
+        size={16}
+        className="shrink-0 text-[oklch(0.82_0.19_145)] drop-shadow-[0_1px_1px_oklch(0_0_0_/_0.6)]"
+      />
       <span className="text-muted-foreground w-24 text-[12px] font-medium">
         {label}
       </span>
@@ -591,7 +597,7 @@ function ConfirmDialog({
         if (!open) onCancel();
       }}
     >
-      <AlertDialogContent size="sm">
+      <AlertDialogContent size="default">
         <AlertDialogHeader>
           <AlertDialogTitle>{content?.title}</AlertDialogTitle>
           <AlertDialogDescription>
@@ -599,7 +605,9 @@ function ConfirmDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{content?.cancel}</AlertDialogCancel>
+          <AlertDialogCancel className="whitespace-nowrap">
+            {content?.cancel}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant={content?.destructive ? 'destructive' : 'default'}
             sfx={content?.destructive ? 'delete' : 'add'}

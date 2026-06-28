@@ -51,8 +51,6 @@ type ButtonProps = ButtonPrimitive.Props &
   VariantProps<typeof buttonVariants> & {
     /** Sound played on press. Defaults to a tactile click; null to silence. */
     sfx?: SoundName | null;
-    /** Whether to chirp on hover. */
-    hoverSound?: boolean;
   };
 
 function Button({
@@ -60,9 +58,7 @@ function Button({
   variant = 'default',
   size = 'default',
   sfx = 'click',
-  hoverSound = true,
   onPointerDown,
-  onMouseEnter,
   ...props
 }: ButtonProps) {
   return (
@@ -72,10 +68,6 @@ function Button({
       onPointerDown={(e) => {
         if (sfx) sound.play(sfx);
         onPointerDown?.(e);
-      }}
-      onMouseEnter={(e) => {
-        if (hoverSound) sound.play('hover');
-        onMouseEnter?.(e);
       }}
       {...props}
     />

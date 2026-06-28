@@ -289,7 +289,7 @@ body {
 /* ---- custom cursors: a quill everywhere, a pointing hand on controls ---- */
 body {
   cursor:
-    url('./assets/cursors/quill.svg') 3 29,
+    url('./assets/cursors/quill.svg') 3 31,
     auto;
   background-color: oklch(0.18 0.025 52);
   background-image:
@@ -310,95 +310,105 @@ button,
 [role='option'],
 a,
 summary,
-label:has(> input[type='checkbox']),
+label,
+[data-slot='label'],
 .cursor-hand {
   cursor:
     url('./assets/cursors/hand.svg') 11 2,
     pointer;
 }
+/* Text-entry surfaces (and any plain selectable text) get the dip pen. */
 input,
 textarea,
 [contenteditable='true'],
-[contenteditable='true'] * {
-  cursor: text;
+[contenteditable='true'] *,
+.use-text-cursor,
+.use-text-cursor * {
+  cursor:
+    url('./assets/cursors/pen.svg') 3 27,
+    text;
 }
 
-/* ---- texture utility classes ---- */
-.tex-wood {
-  background-color: oklch(0.24 0.03 56);
-  background-image: url('./assets/textures/wood.svg');
-  background-size: 420px 420px;
-}
-.tex-leather {
-  background-color: oklch(0.3 0.05 40);
-  background-image: url('./assets/textures/leather.svg');
-  background-size: 260px 260px;
-}
-.tex-parchment {
-  background-color: var(--parchment);
-  background-image: url('./assets/textures/parchment.svg');
-  background-size: 320px 320px;
-}
+/* These structural helpers live in @layer components so Tailwind utilities
+   (e.g. `fixed`, `bg-*`) always win when combined on the same element. */
+@layer components {
+  /* ---- texture utility classes ---- */
+  .tex-wood {
+    background-color: oklch(0.24 0.03 56);
+    background-image: url('./assets/textures/wood.svg');
+    background-size: 420px 420px;
+  }
+  .tex-leather {
+    background-color: oklch(0.3 0.05 40);
+    background-image: url('./assets/textures/leather.svg');
+    background-size: 260px 260px;
+  }
+  .tex-parchment {
+    background-color: var(--parchment);
+    background-image: url('./assets/textures/parchment.svg');
+    background-size: 320px 320px;
+  }
 
-/* ---- carved bevels + brass hardware ---- */
-.bevel-raised {
-  box-shadow:
-    inset 0 1px 0 oklch(1 0 0 / 0.18),
-    inset 0 -2px 4px oklch(0 0 0 / 0.4),
-    0 2px 0 oklch(0 0 0 / 0.5),
-    0 4px 10px oklch(0 0 0 / 0.45);
-}
-.bevel-inset {
-  box-shadow:
-    inset 0 2px 5px oklch(0 0 0 / 0.5),
-    inset 0 -1px 0 oklch(1 0 0 / 0.08);
-}
-.brass-frame {
-  border: 2px solid transparent;
-  border-image: linear-gradient(
-      160deg,
-      oklch(0.85 0.13 88),
-      oklch(0.55 0.1 70) 45%,
-      oklch(0.4 0.07 60) 70%,
-      oklch(0.78 0.12 86)
-    )
-    1;
-}
-.brass-rule {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    oklch(0.78 0.12 84 / 0.7) 15%,
-    oklch(0.85 0.14 88) 50%,
-    oklch(0.78 0.12 84 / 0.7) 85%,
-    transparent
-  );
-}
-/* riveted corner studs on framed panels */
-.studded {
-  position: relative;
-}
-.studded::before,
-.studded::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  width: 6px;
-  height: 6px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle at 35% 30%,
-    oklch(0.95 0.05 90),
-    oklch(0.55 0.1 70) 60%,
-    oklch(0.32 0.05 55)
-  );
-  box-shadow: 0 1px 1px oklch(0 0 0 / 0.6);
-}
-.studded::before {
-  left: 6px;
-}
-.studded::after {
-  right: 6px;
+  /* ---- carved bevels + brass hardware ---- */
+  .bevel-raised {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.18),
+      inset 0 -2px 4px oklch(0 0 0 / 0.4),
+      0 2px 0 oklch(0 0 0 / 0.5),
+      0 4px 10px oklch(0 0 0 / 0.45);
+  }
+  .bevel-inset {
+    box-shadow:
+      inset 0 2px 5px oklch(0 0 0 / 0.5),
+      inset 0 -1px 0 oklch(1 0 0 / 0.08);
+  }
+  .brass-frame {
+    border: 2px solid transparent;
+    border-image: linear-gradient(
+        160deg,
+        oklch(0.85 0.13 88),
+        oklch(0.55 0.1 70) 45%,
+        oklch(0.4 0.07 60) 70%,
+        oklch(0.78 0.12 86)
+      )
+      1;
+  }
+  .brass-rule {
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.78 0.12 84 / 0.7) 15%,
+      oklch(0.85 0.14 88) 50%,
+      oklch(0.78 0.12 84 / 0.7) 85%,
+      transparent
+    );
+  }
+  /* riveted corner studs on framed panels */
+  .studded {
+    position: relative;
+  }
+  .studded::before,
+  .studded::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle at 35% 30%,
+      oklch(0.95 0.05 90),
+      oklch(0.55 0.1 70) 60%,
+      oklch(0.32 0.05 55)
+    );
+    box-shadow: 0 1px 1px oklch(0 0 0 / 0.6);
+  }
+  .studded::before {
+    left: 6px;
+  }
+  .studded::after {
+    right: 6px;
+  }
 }
 
 /* ---- playful motion ---- */
@@ -480,6 +490,80 @@ textarea,
   }
 }
 
+/* ---- delete explosion (spawned at the click point by boom()) ---- */
+@keyframes ns-boom-flash {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+@keyframes ns-boom-particle {
+  0% {
+    transform: rotate(var(--a)) translateX(4px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(var(--a)) translateX(var(--d, 48px)) scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes ns-boom-puff {
+  0% {
+    transform: translate(-50%, -50%) scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(-50%, -60%) scale(2.4);
+    opacity: 0;
+  }
+}
+.boom {
+  position: fixed;
+  z-index: 100;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.boom .flash {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    oklch(0.97 0.15 92) 0%,
+    oklch(0.72 0.2 55 / 0.85) 38%,
+    transparent 70%
+  );
+  animation: ns-boom-flash 0.45s ease-out forwards;
+}
+.boom .smoke {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    oklch(0.4 0.02 60 / 0.7),
+    transparent 70%
+  );
+  animation: ns-boom-puff 0.7s ease-out forwards;
+}
+.boom i {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 2px;
+  background: var(--c, oklch(0.82 0.15 72));
+  box-shadow: 0 0 4px oklch(0.85 0.16 70 / 0.8);
+  animation: ns-boom-particle 0.6s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
 .paginator-host {
   position: fixed;
   left: -10000px;
@@ -542,6 +626,23 @@ textarea,
 
 /* Screen: show reading-root, hide print-root */
 @media screen {
+  /* Single-screen app: the document itself never scrolls (the preview pane and
+     sidebar own their own scrolling). This also stops dialogs from yanking the
+     page down when they grab focus. */
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  /* The app fills the viewport and is taken out of flow, so the document has
+     nothing to scroll — a focused dialog can't yank the chrome out of view.
+     overflow:hidden (not clip) keeps fixed dialogs centred on the viewport. */
+  #root {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
   #reading-root {
     padding-top: 24px;
   }
@@ -671,10 +772,12 @@ textarea,
 }
 
 @theme inline {
-  /* Wild chrome: storybook/blackletter faces drive the UI… */
+  /* Wild chrome: storybook faces drive the UI. Pirata One reads poorly at small
+     sizes, so headings use the legible old-press serif IM Fell English; Pirata
+     is reserved for large decorative display only. */
   --font-display: 'Pirata One', 'Chomsky', 'Times New Roman', serif;
-  --font-heading: var(--font-display);
-  --font-sans: 'MedievalSharp', 'Pirata One', system-ui, sans-serif;
+  --font-heading: 'IM Fell English', 'Pirata One', Georgia, serif;
+  --font-sans: 'MedievalSharp', system-ui, sans-serif;
   /* …calm canvas: the actual typing surfaces stay clean + legible. */
   --font-reading: 'Geist Variable', system-ui, sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);

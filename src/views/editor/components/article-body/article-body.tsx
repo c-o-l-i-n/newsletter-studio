@@ -3,13 +3,13 @@ import { articleExtensions } from '@/utils/tiptap.ts';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
-  TextBoldIcon,
-  TextItalicIcon,
-  Heading03Icon,
-  QuoteUpIcon,
-  LeftToRightListDashIcon,
-  LeftToRightListNumberIcon,
-} from 'hugeicons-react';
+  BoldIcon,
+  ItalicIcon,
+  HeadingIcon,
+  QuoteIcon,
+  BulletListIcon,
+  NumberListIcon,
+} from '@/components/icons';
 
 export function ArticleBody({
   value,
@@ -41,14 +41,14 @@ export function ArticleBody({
           active={editor.isActive('bold')}
           onActivate={() => editor.chain().focus().toggleBold().run()}
         >
-          <TextBoldIcon size={13} />
+          <BoldIcon size={14} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Italic"
           active={editor.isActive('italic')}
           onActivate={() => editor.chain().focus().toggleItalic().run()}
         >
-          <TextItalicIcon size={13} />
+          <ItalicIcon size={14} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Subhead"
@@ -57,28 +57,28 @@ export function ArticleBody({
             editor.chain().focus().toggleHeading({ level: 3 }).run()
           }
         >
-          <Heading03Icon size={13} />
+          <HeadingIcon size={14} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Pull-quote"
           active={editor.isActive('blockquote')}
           onActivate={() => editor.chain().focus().toggleBlockquote().run()}
         >
-          <QuoteUpIcon size={13} />
+          <QuoteIcon size={14} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Bullet list"
           active={editor.isActive('bulletList')}
           onActivate={() => editor.chain().focus().toggleBulletList().run()}
         >
-          <LeftToRightListDashIcon size={13} />
+          <BulletListIcon size={14} />
         </ToolbarBtn>
         <ToolbarBtn
           title="Numbered list"
           active={editor.isActive('orderedList')}
           onActivate={() => editor.chain().focus().toggleOrderedList().run()}
         >
-          <LeftToRightListNumberIcon size={13} />
+          <NumberListIcon size={14} />
         </ToolbarBtn>
       </div>
       <EditorContent editor={editor} />
@@ -110,7 +110,7 @@ function ToolbarBtn({
       className={cn(
         'h-6 min-w-6 px-1.5 text-[11px]',
         active
-          ? 'bg-gradient-to-b from-[oklch(0.86_0.13_88)] to-[oklch(0.66_0.12_72)] text-[oklch(0.22_0.05_50)] shadow-[inset_0_1px_0_oklch(1_0_0_/_0.4)]'
+          ? 'border-[oklch(0.52_0.08_70)] bg-[oklch(0.75_0.13_84)] text-[oklch(0.2_0.05_50)] shadow-none active:not-aria-[haspopup]:shadow-none'
           : 'text-muted-foreground hover:text-foreground',
       )}
     >
