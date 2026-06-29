@@ -25,8 +25,8 @@ export default defineConfig({
         short_name: 'Newsletter',
         description:
           'Write and print a vintage-style paper newsletter for family and friends, fully offline',
-        theme_color: '#2c1a0e',
-        background_color: '#1f1209',
+        theme_color: '#43251a',
+        background_color: '#43251a',
         display: 'standalone',
         start_url: '/',
         launch_handler: {

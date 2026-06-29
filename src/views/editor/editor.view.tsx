@@ -30,11 +30,13 @@ import { emptyDoc } from '@/utils/tiptap.ts';
 import { putImageWithId } from '@/services/image-store.ts';
 import seedCrosswordImageUrl from '@/assets/crossword.webp?url';
 import seedZuccImageUrl from '@/assets/zucc.webp?url';
+import seedInstallImageUrl from '@/assets/install.webp?url';
 import { EditorUI, type SaveState, type PendingAction } from './editor.ui';
 import type { PreviewStats } from './components/preview';
 
 const SEED_CROSSWORD_IMAGE = 'seed-crossword-image';
 const SEED_ZUCC_IMAGE = 'seed-zucc-image';
+const SEED_INSTALL_IMAGE = 'seed-install-image';
 
 function loadSeedImages(onLoaded: () => void): void {
   const load = (url: string, id: string) =>
@@ -47,6 +49,7 @@ function loadSeedImages(onLoaded: () => void): void {
       .catch(console.error);
   void load(seedCrosswordImageUrl, SEED_CROSSWORD_IMAGE);
   void load(seedZuccImageUrl, SEED_ZUCC_IMAGE);
+  void load(seedInstallImageUrl, SEED_INSTALL_IMAGE);
 }
 
 const CURRENT_MONTH_AND_YEAR = new Date().toLocaleDateString('en-US', {
@@ -342,6 +345,18 @@ const seed: Newsletter = {
           },
         ],
       },
+    },
+    {
+      id: newId(),
+      type: 'imageset',
+      images: [
+        {
+          id: 'imginstallguide',
+          imageId: SEED_INSTALL_IMAGE,
+          caption: 'Installing the app in Chrome/Edge/Brave',
+          border: 'single',
+        },
+      ],
     },
   ],
 };
