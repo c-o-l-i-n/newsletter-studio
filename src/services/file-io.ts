@@ -106,6 +106,91 @@ export async function saveNewsletterAs(
 export const isAbortError = (e: unknown): boolean =>
   e instanceof DOMException && e.name === 'AbortError';
 
+// ---- Most-recently-opened file: persist its handle so we can reopen it on the
+// next launch. FileSystemFileHandle is structured-cloneable, so it survives in
+// IndexedDB. Reopening silently needs the permission to still be 'granted'
+// (Chromium persists this for installed PWAs); otherwise we skip it.
+
+const HANDLE_DB = 'ns-file-handles';
+const HANDLE_STORE = 'handles';
+const LAST_KEY = 'last';
+
+function openHandleDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(HANDLE_DB, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(HANDLE_STORE);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function saveLastFileHandle(
+  handle: FileSystemFileHandle,
+): Promise<void> {
+  try {
+    const db = await openHandleDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction(HANDLE_STORE, 'readwrite');
+      tx.objectStore(HANDLE_STORE).put(handle, LAST_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  } catch {
+    /* best effort */
+  }
+}
+
+export async function getLastFileHandle(): Promise<FileSystemFileHandle | null> {
+  try {
+    const db = await openHandleDB();
+    const handle = await new Promise<FileSystemFileHandle | null>(
+      (resolve, reject) => {
+        const tx = db.transaction(HANDLE_STORE, 'readonly');
+        const r = tx.objectStore(HANDLE_STORE).get(LAST_KEY);
+        r.onsuccess = () => resolve((r.result as FileSystemFileHandle) ?? null);
+        r.onerror = () => reject(r.error);
+      },
+    );
+    db.close();
+    return handle;
+  } catch {
+    return null;
+  }
+}
+
+export async function clearLastFileHandle(): Promise<void> {
+  try {
+    const db = await openHandleDB();
+    await new Promise<void>((resolve) => {
+      const tx = db.transaction(HANDLE_STORE, 'readwrite');
+      tx.objectStore(HANDLE_STORE).delete(LAST_KEY);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+    db.close();
+  } catch {
+    /* best effort */
+  }
+}
+
+/** True only if we can read the file without prompting (no user gesture here). */
+export async function hasReadPermission(
+  handle: FileSystemFileHandle,
+): Promise<boolean> {
+  const h = handle as FileSystemFileHandle & {
+    queryPermission?: (opts: {
+      mode: 'read' | 'readwrite';
+    }) => Promise<PermissionState>;
+  };
+  if (!h.queryPermission) return true; // fall back to getFile() validating it
+  try {
+    return (await h.queryPermission({ mode: 'read' })) === 'granted';
+  } catch {
+    return true;
+  }
+}
+
 // ---- Fallback for browsers without File System Access (e.g. Brave, which
 // disables it by default): plain download to save, file input to open. No
 // autosave-to-file is possible, so the OPFS crash cache carries the safety net.

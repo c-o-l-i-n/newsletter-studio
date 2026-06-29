@@ -13,14 +13,18 @@ import { makeBlock } from '@/utils/make-block.ts';
 import { clearImages } from '@/services/image-store.ts';
 import {
   clearCrashCache,
+  clearLastFileHandle,
   downloadNewsletter,
+  getLastFileHandle,
   hasCrashCache,
+  hasReadPermission,
   isAbortError,
   isFileSystemAccessSupported,
   openNewsletterFile,
   pickNewsletterFile,
   readCrashCache,
   readNewsletterFromHandle,
+  saveLastFileHandle,
   saveNewsletterAs,
   writeCrashCache,
   writeToHandle,
@@ -386,6 +390,9 @@ export function EditorView() {
   const handleRef = useRef<FileSystemFileHandle | null>(null);
   const firstRun = useRef(true);
   const suppressDirty = useRef(false);
+  // Set when a file is opened via the OS file handler, so the boot restore
+  // doesn't overwrite it with the previously-viewed file.
+  const openedViaLaunch = useRef(false);
   const fsaSupported = isFileSystemAccessSupported();
 
   // Autosave: debounce changes → crash cache always, and to the open file if
@@ -423,17 +430,43 @@ export function EditorView() {
     loadSeedImages(() => setImageRevision((v) => v + 1));
   }, []);
 
-  // On first load, show a dialog to restore an OPFS crash snapshot if present.
+  // Boot: reopen the most recently viewed file (if it still exists and we still
+  // have permission); otherwise fall back to offering the OPFS crash snapshot.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
+      // 1. Reopen the last-viewed file from disk.
+      const handle = await getLastFileHandle();
+      if (cancelled || openedViaLaunch.current) return;
+      if (handle && (await hasReadPermission(handle))) {
+        try {
+          const { newsletter, name } = await readNewsletterFromHandle(handle);
+          if (cancelled || openedViaLaunch.current) return;
+          handleRef.current = handle;
+          setFileName(name);
+          suppressDirty.current = true;
+          setNl(newsletter);
+          return; // loaded the saved file; skip the crash prompt
+        } catch {
+          // File moved/deleted or access revoked — forget it.
+          await clearLastFileHandle();
+        }
+      }
+
+      // 2. Otherwise, offer to restore an OPFS crash snapshot if present.
+      if (cancelled || openedViaLaunch.current) return;
       if (!(await hasCrashCache())) return;
       const cached = await readCrashCache();
+      if (cancelled || openedViaLaunch.current) return;
       if (cached) {
         setPendingAction({ type: 'restore-crash', cache: cached });
       } else {
         await clearCrashCache();
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const doNew = useCallback(async () => {
@@ -443,6 +476,8 @@ export function EditorView() {
     suppressDirty.current = true;
     setNl((prev) => ({ ...prev, blocks: [] }));
     await clearCrashCache();
+    // Detach from any file so the next launch starts fresh, not on the old one.
+    await clearLastFileHandle();
   }, []);
 
   const doOpen = useCallback(async () => {
@@ -451,6 +486,7 @@ export function EditorView() {
         const { newsletter, handle, name } = await openNewsletterFile();
         handleRef.current = handle;
         setFileName(name);
+        void saveLastFileHandle(handle);
         suppressDirty.current = true;
         setNl(newsletter);
       } else {
@@ -471,10 +507,12 @@ export function EditorView() {
 
   // Open a file the OS handed us (double-clicked .newsletter → file handler).
   const doOpenHandle = useCallback(async (handle: FileSystemFileHandle) => {
+    openedViaLaunch.current = true;
     try {
       const { newsletter, name } = await readNewsletterFromHandle(handle);
       handleRef.current = handle;
       setFileName(name);
+      void saveLastFileHandle(handle);
       suppressDirty.current = true;
       setNl(newsletter);
     } catch (e) {
@@ -517,6 +555,7 @@ export function EditorView() {
         const { handle, name } = await saveNewsletterAs(nl);
         handleRef.current = handle;
         setFileName(name);
+        void saveLastFileHandle(handle);
         setSaveState('saved');
       } else {
         const name = await downloadNewsletter(nl);
@@ -619,6 +658,7 @@ export function EditorView() {
       const { handle, name } = await saveNewsletterAs(nl);
       handleRef.current = handle;
       setFileName(name);
+      void saveLastFileHandle(handle);
       setSaveState('saved');
     } catch (e) {
       if (!isAbortError(e)) {
