@@ -20,6 +20,7 @@ import {
   openNewsletterFile,
   pickNewsletterFile,
   readCrashCache,
+  readNewsletterFromHandle,
   saveNewsletterAs,
   writeCrashCache,
   writeToHandle,
@@ -452,6 +453,28 @@ export function EditorView() {
       }
     }
   }, []);
+
+  // Open a file the OS handed us (double-clicked .newsletter → file handler).
+  const doOpenHandle = useCallback(async (handle: FileSystemFileHandle) => {
+    try {
+      const { newsletter, name } = await readNewsletterFromHandle(handle);
+      handleRef.current = handle;
+      setFileName(name);
+      suppressDirty.current = true;
+      setNl(newsletter);
+    } catch (e) {
+      console.error(e);
+      alert(`Could not open file: ${(e as Error).message}`);
+    }
+  }, []);
+
+  // File Handling API: receive files when launched via a double-clicked file.
+  useEffect(() => {
+    window.launchQueue?.setConsumer((params) => {
+      const handle = params.files[0];
+      if (handle) void doOpenHandle(handle);
+    });
+  }, [doOpenHandle]);
 
   const onNew = useCallback(() => {
     if (saveState !== 'saved') {

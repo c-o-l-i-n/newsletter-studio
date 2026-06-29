@@ -29,6 +29,17 @@ export default defineConfig({
         background_color: '#1f1209',
         display: 'standalone',
         start_url: '/',
+        launch_handler: {
+          client_mode: 'focus-existing',
+        },
+        file_handlers: [
+          {
+            action: '/',
+            accept: {
+              'application/x-newsletter+zip': ['.newsletter'],
+            },
+          },
+        ],
         icons: [
           {
             src: '/icon-192.png',

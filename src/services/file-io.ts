@@ -18,6 +18,13 @@ interface SaveFilePickerOptions {
   suggestedName?: string;
   excludeAcceptAllOption?: boolean;
 }
+/** File Handling API: files passed when the app is launched to open a file. */
+interface LaunchParams {
+  readonly files: readonly FileSystemFileHandle[];
+}
+interface LaunchQueue {
+  setConsumer(consumer: (params: LaunchParams) => void): void;
+}
 declare global {
   interface Window {
     showOpenFilePicker(
@@ -26,6 +33,7 @@ declare global {
     showSaveFilePicker(
       options?: SaveFilePickerOptions,
     ): Promise<FileSystemFileHandle>;
+    launchQueue?: LaunchQueue;
   }
 }
 
@@ -66,6 +74,19 @@ export async function openNewsletterFile(): Promise<{
     types: PICKER_TYPES,
     multiple: false,
   });
+  const file = await handle.getFile();
+  const newsletter = await zipBlobToNewsletter(file);
+  return { newsletter, handle, name: handle.name };
+}
+
+/** Load a newsletter from a handle the OS hands us (file-handler launch). */
+export async function readNewsletterFromHandle(
+  handle: FileSystemFileHandle,
+): Promise<{
+  newsletter: Newsletter;
+  handle: FileSystemFileHandle;
+  name: string;
+}> {
   const file = await handle.getFile();
   const newsletter = await zipBlobToNewsletter(file);
   return { newsletter, handle, name: handle.name };
