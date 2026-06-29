@@ -76,7 +76,7 @@ export default defineConfig({
           },
           {
             src: '/screenshots/mobile.png',
-            sizes: '390x844',
+            sizes: '400x844',
             type: 'image/png',
             form_factor: 'narrow',
             label: 'Newsletter Studio',
