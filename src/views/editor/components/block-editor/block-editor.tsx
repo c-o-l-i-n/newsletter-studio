@@ -168,7 +168,7 @@ export class BlockEditor extends Component<BlockEditorProps> {
         </div>
 
         {/* ── Sticky add-block footer ───────────────────────────────── */}
-        <div className="tex-wood shrink-0 border-t-2 border-[oklch(0.58_0.1_76)] px-3 py-2.5 shadow-[0_-3px_10px_oklch(0_0_0_/_0.4)]">
+        <div className="tex-wood shrink-0 border-t border-[oklch(0.58_0.1_76)] px-3 py-2.5 shadow-[0_-3px_10px_oklch(0_0_0_/_0.4)]">
           <p className="text-primary font-heading mb-2 text-[14px] font-semibold tracking-wide">
             Add a block
           </p>

@@ -66,7 +66,7 @@ export interface NewsletterSettings {
 }
 
 export const DEFAULT_SETTINGS: NewsletterSettings = {
-  formatId: 'trifold',
+  formatId: 'booklet',
   paperSize: 'letter',
   colorImages: false,
 };

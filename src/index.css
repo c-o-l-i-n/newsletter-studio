@@ -317,7 +317,7 @@ label,
     url('./assets/cursors/hand.svg') 11 2,
     pointer;
 }
-/* Text-entry surfaces (and any plain selectable text) get the dip pen. */
+/* Text-entry surfaces get a themed I-beam. */
 input,
 textarea,
 [contenteditable='true'],
@@ -325,7 +325,7 @@ textarea,
 .use-text-cursor,
 .use-text-cursor * {
   cursor:
-    url('./assets/cursors/pen.svg') 3 27,
+    url('./assets/cursors/text.svg') 12 12,
     text;
 }
 

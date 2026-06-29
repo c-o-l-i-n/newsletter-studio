@@ -138,6 +138,7 @@ export function EditorUI({
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'p') {
         e.preventDefault();
+        sound.play('print');
         setShowPrintDialog(true);
       }
     };
@@ -148,7 +149,7 @@ export function EditorUI({
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* ── Header ───────────────────────────────────────────────── */}
-      <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b-2 border-[oklch(0.46_0.07_70)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
+      <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b border-[oklch(0.46_0.07_70)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
         {/* File ops */}
         <Button
           variant="ghost"
@@ -184,7 +185,10 @@ export function EditorUI({
           {hasSaveHandle ? 'Save' : fsaSupported ? 'Save As…' : 'Download'}
         </Button>
 
-        <Separator orientation="vertical" className="mx-1.5 !h-4 self-center" />
+        <Separator
+          orientation="vertical"
+          className="mx-1.5 self-stretch shadow-none"
+        />
 
         {/* Format selector */}
         <Select
@@ -204,14 +208,17 @@ export function EditorUI({
           </SelectTrigger>
           <SelectContent>
             {Object.values(FORMATS).map((f) => (
-              <SelectItem key={f.id} value={f.id}>
+              <SelectItem key={f.id} value={f.id} className="text-[12px]">
                 {f.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Separator orientation="vertical" className="mx-1.5 !h-4 self-center" />
+        <Separator
+          orientation="vertical"
+          className="mx-1.5 self-stretch shadow-none"
+        />
 
         {/* Paper size */}
         <SegmentedControl
@@ -291,7 +298,7 @@ export function EditorUI({
       {/* ── Body ─────────────────────────────────────────────────── */}
       <div className="app-main flex min-h-0 flex-1">
         {/* Sidebar */}
-        <div className="no-print tex-leather flex w-[400px] shrink-0 flex-col overflow-hidden border-r-2 border-[oklch(0.42_0.06_68)] shadow-[inset_-6px_0_14px_oklch(0_0_0_/_0.35)]">
+        <div className="no-print tex-leather flex w-[400px] shrink-0 flex-col overflow-hidden border-r border-[oklch(0.42_0.06_68)] shadow-[inset_-6px_0_14px_oklch(0_0_0_/_0.35)]">
           <BlockEditor
             newsletter={newsletter}
             onPublication={onPublication}
@@ -341,7 +348,7 @@ function SegmentedControl<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="tex-wood flex h-7 overflow-hidden rounded-[calc(var(--radius)*0.55)] border-2 border-[oklch(0.5_0.07_72)] shadow-[inset_0_1px_3px_oklch(0_0_0_/_0.45)]">
+    <div className="tex-wood flex h-7 overflow-hidden rounded-[calc(var(--radius)*0.55)] border border-[oklch(0.5_0.07_72)] shadow-[inset_0_1px_3px_oklch(0_0_0_/_0.45)]">
       {options.map((opt, i) => (
         <button
           key={opt.value}

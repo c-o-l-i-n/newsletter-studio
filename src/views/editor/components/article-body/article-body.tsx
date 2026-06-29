@@ -25,7 +25,7 @@ export function ArticleBody({
     editorProps: {
       attributes: {
         class:
-          'prose-editor bg-parchment text-parchment-ink min-h-[6rem] rounded-b-[calc(var(--radius)*0.5)] border-x-2 border-b-2 border-[oklch(0.5_0.07_72)] px-3 py-2 text-[14px] leading-relaxed shadow-[inset_0_2px_5px_oklch(0_0_0_/_0.2)] focus:outline-none',
+          'prose-editor bg-parchment text-parchment-ink min-h-[6rem] rounded-b-[calc(var(--radius)*0.5)] border-x border-b border-[oklch(0.5_0.07_72)] px-3 py-2 text-[14px] leading-relaxed shadow-[inset_0_2px_5px_oklch(0_0_0_/_0.2)] focus:outline-none',
       },
     },
   });
@@ -35,7 +35,7 @@ export function ArticleBody({
   return (
     <div>
       {/* Formatting toolbar */}
-      <div className="tex-wood flex flex-wrap gap-0.5 rounded-t-[calc(var(--radius)*0.5)] border-2 border-[oklch(0.5_0.07_72)] px-1.5 py-1 shadow-[inset_0_1px_0_oklch(1_0_0_/_0.1)]">
+      <div className="tex-wood flex flex-wrap gap-0.5 rounded-t-[calc(var(--radius)*0.5)] border border-[oklch(0.5_0.07_72)] px-1.5 py-1 shadow-[inset_0_1px_0_oklch(1_0_0_/_0.1)]">
         <ToolbarBtn
           title="Bold"
           active={editor.isActive('bold')}
