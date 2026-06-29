@@ -254,6 +254,21 @@ input[type='submit'] {
 .nl-imageset-item {
   break-inside: avoid;
 }
+/* Two-column image set: a fixed grid kept atomic. Images are narrower, so cap
+   their height lower than the full-width single-column case. */
+.nl-imageset--2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.1in 0.12in;
+  break-inside: avoid;
+  margin: 0 0 0.16in;
+}
+.nl-imageset--2col .nl-media {
+  margin: 0;
+}
+.nl-imageset--2col .nl-img {
+  max-height: 2.4in;
+}
 .nl-img-frame {
   line-height: 0;
 }

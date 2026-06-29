@@ -474,6 +474,34 @@ function ImageSetFields({
 
   return (
     <>
+      {block.images.length >= 2 && (
+        <div className="bg-muted/50 flex items-center justify-between rounded-lg px-2.5 py-1.5">
+          <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+            Layout
+          </span>
+          <Select
+            value={String(block.columns ?? 1)}
+            onValueChange={(v) =>
+              v && onUpdate(block.id, { columns: Number(v) as 1 | 2 })
+            }
+          >
+            <SelectTrigger
+              size="sm"
+              className="h-6 w-32 text-xs focus-visible:ring-0"
+            >
+              {(block.columns ?? 1) === 2 ? 'Two columns' : 'One column'}
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="1" className="text-xs">
+                One column
+              </SelectItem>
+              <SelectItem value="2" className="text-xs">
+                Two columns
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      )}
       {block.images.map((img, idx) => {
         const url = imageUrl(img.imageId);
         return (

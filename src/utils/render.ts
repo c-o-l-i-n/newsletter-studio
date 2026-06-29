@@ -44,7 +44,7 @@ function renderBlock(block: Block): string {
       return `<section class="nl-advice"><h2 class="dept">${esc(title)}</h2>${items}</section>`;
     }
     case 'imageset': {
-      return block.images
+      const figures = block.images
         .map((item) => {
           const url = imageUrl(item.imageId);
           const inner = url
@@ -60,6 +60,11 @@ function renderBlock(block: Block): string {
           return `<figure class="nl-media nl-imageset-item">${framed}${cap}</figure>`;
         })
         .join('');
+      // Two columns only makes sense with more than one image.
+      const twoCol = block.columns === 2 && block.images.length > 1;
+      return twoCol
+        ? `<div class="nl-imageset nl-imageset--2col">${figures}</div>`
+        : figures;
     }
   }
 }

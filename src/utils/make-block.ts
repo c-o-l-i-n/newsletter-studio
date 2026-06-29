@@ -15,6 +15,6 @@ export function makeBlock(type: BlockType): Block {
         items: [{ id: newId('i'), question: '', answer: '' }],
       };
     case 'imageset':
-      return { id, type, images: [] };
+      return { id, type, images: [], columns: 1 };
   }
 }

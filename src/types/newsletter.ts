@@ -37,6 +37,8 @@ export interface ImageSetBlock {
   id: BlockId;
   type: 'imageset';
   images: ImageItem[];
+  /** Number of columns the images flow into. Defaults to 1 when absent. */
+  columns?: 1 | 2;
 }
 
 export type Block = ArticleBlock | AdviceBlock | ImageSetBlock;
