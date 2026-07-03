@@ -1,4 +1,5 @@
 import { newId } from '@/utils/ids';
+import { downscaleForPrint } from './image-optimize';
 
 interface Entry {
   blob: Blob;
@@ -12,6 +13,14 @@ export function putImage(blob: Blob): string {
   const id = newId('img');
   store.set(id, { blob, url: URL.createObjectURL(blob) });
   return id;
+}
+
+/**
+ * Add a new image, downscaling/recompressing it for print first so freshly
+ * imported photos never enter the document at full camera resolution.
+ */
+export async function putImageOptimized(blob: Blob): Promise<string> {
+  return putImage(await downscaleForPrint(blob));
 }
 
 /** Restore an image under a known id (used when loading a file). */

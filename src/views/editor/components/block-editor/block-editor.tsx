@@ -17,7 +17,7 @@ import type {
 } from '@/types';
 import { BLOCK_LABELS } from '@/constants';
 import { newId } from '@/utils/ids.ts';
-import { imageUrl, putImage } from '@/services/image-store.ts';
+import { imageUrl, putImageOptimized } from '@/services/image-store.ts';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -512,8 +512,10 @@ function ImageSetFields({
               title={url ? 'Click to replace image' : 'Click to add image'}
               className="border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80"
               onClick={() =>
-                pickImageFile((file) =>
-                  updateImage(img.id, { imageId: putImage(file) }),
+                pickImageFile(async (file) =>
+                  updateImage(img.id, {
+                    imageId: await putImageOptimized(file),
+                  }),
                 )
               }
             >
@@ -600,12 +602,12 @@ function ImageSetFields({
         sfx="add"
         className="self-start text-[11px]"
         onClick={() =>
-          pickImageFile((file) =>
+          pickImageFile(async (file) =>
             setImages([
               ...block.images,
               {
                 id: newId('img'),
-                imageId: putImage(file),
+                imageId: await putImageOptimized(file),
                 caption: '',
                 border: 'single',
               },
