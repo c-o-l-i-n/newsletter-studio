@@ -588,7 +588,10 @@ function ImageSetFields({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className={`text-muted-foreground hover:bg-destructive/20 hover:text-destructive size-6${img.imageId ? '' : 'ml-auto'}`}
+                  className={cn(
+                    'text-muted-foreground hover:bg-destructive/20 hover:text-destructive size-6',
+                    !img.imageId && 'ml-auto',
+                  )}
                   onClick={() => setPendingRemoveId(img.id)}
                 >
                   <BombIcon size={13} />
@@ -707,7 +710,10 @@ function ImageThumb({
         <img
           src={url}
           alt=""
-          className={`h-full w-full object-cover${colorImages ? '' : 'grayscale'}`}
+          className={cn(
+            'h-full w-full object-cover',
+            !colorImages && 'grayscale',
+          )}
         />
       ) : (
         <span>add</span>
