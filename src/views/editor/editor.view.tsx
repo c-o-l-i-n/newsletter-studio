@@ -32,6 +32,7 @@ import {
 import { newId } from '@/utils/ids.ts';
 import { emptyDoc } from '@/utils/tiptap.ts';
 import { putImageWithId } from '@/services/image-store.ts';
+import { encodeForPrint } from '@/services/image-optimize.ts';
 import seedCrosswordImageUrl from '@/assets/crossword.webp?url';
 import seedZuccImageUrl from '@/assets/zucc.webp?url';
 import seedInstallImageUrl from '@/assets/install.webp?url';
@@ -46,6 +47,7 @@ function loadSeedImages(onLoaded: () => void): void {
   const load = (url: string, id: string) =>
     fetch(url)
       .then((r) => r.blob())
+      .then(encodeForPrint)
       .then((blob) => {
         putImageWithId(id, blob);
         onLoaded();

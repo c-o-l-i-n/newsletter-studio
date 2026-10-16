@@ -1,30 +1,22 @@
 import { newId } from '@/utils/ids';
-import { downscaleForPrint } from './image-optimize';
+import type { PrintBlob } from './image-optimize';
 
 interface Entry {
-  blob: Blob;
+  blob: PrintBlob;
   url: string;
 }
 
 const store = new Map<string, Entry>();
 
 /** Add a new image, returns its generated id. */
-export function putImage(blob: Blob): string {
+export function putImage(blob: PrintBlob): string {
   const id = newId('img');
   store.set(id, { blob, url: URL.createObjectURL(blob) });
   return id;
 }
 
-/**
- * Add a new image, downscaling/recompressing it for print first so freshly
- * imported photos never enter the document at full camera resolution.
- */
-export async function putImageOptimized(blob: Blob): Promise<string> {
-  return putImage(await downscaleForPrint(blob));
-}
-
 /** Restore an image under a known id (used when loading a file). */
-export function putImageWithId(id: string, blob: Blob): void {
+export function putImageWithId(id: string, blob: PrintBlob): void {
   const existing = store.get(id);
   if (existing) URL.revokeObjectURL(existing.url);
   store.set(id, { blob, url: URL.createObjectURL(blob) });
@@ -34,7 +26,7 @@ export function imageUrl(id: string | null | undefined): string | undefined {
   return id ? store.get(id)?.url : undefined;
 }
 
-export function imageBlob(id: string): Blob | undefined {
+export function imageBlob(id: string): PrintBlob | undefined {
   return store.get(id)?.blob;
 }
 

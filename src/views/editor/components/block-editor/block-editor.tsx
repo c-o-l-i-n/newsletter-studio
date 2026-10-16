@@ -17,7 +17,8 @@ import type {
 } from '@/types';
 import { BLOCK_LABELS } from '@/constants';
 import { newId } from '@/utils/ids.ts';
-import { imageUrl, putImageOptimized } from '@/services/image-store.ts';
+import { imageUrl, putImage } from '@/services/image-store.ts';
+import { encodeForPrint } from '@/services/image-optimize.ts';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -514,7 +515,7 @@ function ImageSetFields({
               onClick={() =>
                 pickImageFile(async (file) =>
                   updateImage(img.id, {
-                    imageId: await putImageOptimized(file),
+                    imageId: putImage(await encodeForPrint(file)),
                   }),
                 )
               }
@@ -607,7 +608,7 @@ function ImageSetFields({
               ...block.images,
               {
                 id: newId('img'),
-                imageId: await putImageOptimized(file),
+                imageId: putImage(await encodeForPrint(file)),
                 caption: '',
                 border: 'single',
               },

@@ -14,8 +14,8 @@ model: issues are objects they can see, move, copy, and back up in Finder.
 ## Consequences
 
 - Targets Chromium browsers; Safari (no File System Access) is explicitly out of scope.
-- Original images are stored (not just processed versions), keeping the file self-contained
-  and re-editable, at the cost of file size.
+- Images are stored inside the file, keeping it self-contained. They are stored
+  print-optimized, not original (see the amendment below).
 - The zip layout and `manifest.json` schema are a compatibility surface — version the
   manifest from day one (`formatVersion`, currently 1).
 
@@ -34,3 +34,22 @@ runtime by feature detection:
 OPFS (`navigator.storage.getDirectory`) is available in Brave, so the crash cache works in
 both paths. Persisting the file handle across reloads (IndexedDB) remains a possible
 enhancement for the FSA path only.
+
+## Amendment: images are stored print-optimized, not original
+
+The first version kept every imported photo byte for byte, so an issue with a dozen phone
+photos reached 11 to 18 MB. The file now stores each image the way the app prints it:
+cropped if the author cropped it, capped at 2000px on its long edge, and re-encoded as JPEG
+at quality 0.8. A full-width booklet image prints at most about 4.75in on its long edge,
+so 2000px is over 400 ppi there, more than a home printer can show. The August 2026 issue
+went from 17.8 MB of images to 7.4 MB.
+
+- Import encodes each image before it enters the document. Opening a file encodes every
+  image whose manifest entry lacks `optimized: true`, which is every image in a file saved
+  by an older version. Opening does not mark the document dirty, so an old file shrinks on
+  its next save.
+- Every saved image entry carries `optimized: true`. Reopening a saved file skips the
+  encoder, and its image bytes round-trip unchanged.
+- The field is additive and old versions ignore it, so `formatVersion` stays 1.
+- The camera original is not kept. Re-cropping works from the stored copy, and authors keep
+  their originals in their photo library.
