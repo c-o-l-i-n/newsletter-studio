@@ -9,7 +9,8 @@ import type {
 } from '@/types';
 import { DEFAULT_SETTINGS } from '@/types/newsletter';
 import { FORMATS } from '@/utils/formats.ts';
-import { makeBlock } from '@/utils/make-block.ts';
+import { makeBlock, makeImageSet } from '@/utils/make-block.ts';
+import { importImages } from '@/services/image-import.ts';
 import { clearImages } from '@/services/image-store.ts';
 import {
   clearCrashCache,
@@ -32,6 +33,7 @@ import {
 import { newId } from '@/utils/ids.ts';
 import { emptyDoc } from '@/utils/tiptap.ts';
 import { putImageWithId } from '@/services/image-store.ts';
+import { asPrintBlob } from '@/services/image-optimize.ts';
 import seedCrosswordImageUrl from '@/assets/crossword.webp?url';
 import seedZuccImageUrl from '@/assets/zucc.webp?url';
 import seedInstallImageUrl from '@/assets/install.webp?url';
@@ -47,7 +49,7 @@ function loadSeedImages(onLoaded: () => void): void {
     fetch(url)
       .then((r) => r.blob())
       .then((blob) => {
-        putImageWithId(id, blob);
+        putImageWithId(id, asPrintBlob(blob));
         onLoaded();
       })
       .catch(console.error);
@@ -621,6 +623,11 @@ export function EditorView() {
       })),
     [],
   );
+  const onDropImages = useCallback(async (files: File[]) => {
+    const ids = await importImages(files);
+    if (ids.length)
+      setNl((nl) => ({ ...nl, blocks: [...nl.blocks, makeImageSet(ids)] }));
+  }, []);
   const onRemove = useCallback(
     (id: string) =>
       setNl((nl) => ({ ...nl, blocks: nl.blocks.filter((b) => b.id !== id) })),
@@ -729,6 +736,7 @@ export function EditorView() {
       onPublication={onPublication}
       onSettings={onSettings}
       onAdd={onAdd}
+      onDropImages={onDropImages}
       onUpdate={onUpdate}
       onRemove={onRemove}
       onMove={onMove}

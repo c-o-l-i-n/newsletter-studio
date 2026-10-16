@@ -41,6 +41,20 @@ export interface ImageSetBlock {
   columns?: 1 | 2;
 }
 
+/**
+ * The patch that gives a set new images. A set that grows from fewer than two
+ * images to two or more switches to two columns; otherwise the author's
+ * layout stands.
+ */
+export function imagesPatch(
+  block: ImageSetBlock,
+  images: ImageItem[],
+): Pick<ImageSetBlock, 'images' | 'columns'> {
+  return block.images.length < 2 && images.length >= 2
+    ? { images, columns: 2 }
+    : { images };
+}
+
 export type Block = ArticleBlock | AdviceBlock | ImageSetBlock;
 
 export type BlockType = Block['type'];

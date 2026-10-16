@@ -40,7 +40,7 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Edit content](./edit-content.md) covers Masthead fields, adding, moving, and removing blocks, article rich text, and the advice column.
-- [Image sets](./image-sets.md) covers adding and replacing images, captions, borders, two-column layout, B&W versus color, and print downscaling.
+- [Image sets](./image-sets.md) covers adding, replacing, and cropping images, HEIC import, drag and drop from Finder, captions, borders, two-column layout, B&W versus color, and print compression.
 - [Formats and preview](./formats-preview.md) covers format switching, paper size, the panel gauge and overset, and zoom.
 - [Save, open, and recovery](./save-open.md) covers New, Open, Save, Save As, Download, autosave, reopening the last file, crash restore, and shortcuts.
 - [Print](./print.md) covers the print-instructions dialog and the imposed print output as a PDF.

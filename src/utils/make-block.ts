@@ -1,4 +1,10 @@
-import type { Block, BlockType } from '@/types';
+import {
+  imagesPatch,
+  type Block,
+  type BlockType,
+  type ImageItem,
+  type ImageSetBlock,
+} from '@/types';
 import { newId } from './ids';
 import { emptyDoc } from './tiptap';
 
@@ -15,6 +21,20 @@ export function makeBlock(type: BlockType): Block {
         items: [{ id: newId('i'), question: '', answer: '' }],
       };
     case 'imageset':
-      return { id, type, images: [], columns: 1 };
+      return makeImageSet([]);
   }
+}
+
+export function makeImageSet(imageIds: string[]): ImageSetBlock {
+  const empty: ImageSetBlock = {
+    id: newId(),
+    type: 'imageset',
+    images: [],
+    columns: 1,
+  };
+  return { ...empty, ...imagesPatch(empty, imageIds.map(makeImageItem)) };
+}
+
+export function makeImageItem(imageId: string): ImageItem {
+  return { id: newId('img'), imageId, caption: '', border: 'single' };
 }

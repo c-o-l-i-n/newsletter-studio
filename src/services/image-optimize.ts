@@ -1,77 +1,86 @@
-// Downscale + recompress imported photos so they don't overwhelm the printer.
+// The one place that decides how image bytes are stored. Every blob in the
+// image store has been through encodeForPrint, so a saved file never carries
+// camera-resolution originals (see docs/adr/0003-file-format.md).
 //
-// A high-resolution phone photo (often 12–24 MP, several MB) embedded at full
-// resolution forces the print pipeline to hold an enormous bitmap for every
-// copy of every page it lays out — that is what triggers the printer's
-// out-of-memory error after only a few copies. We cap the longest edge and
-// re-encode as JPEG.
-//
-// MAX_EDGE_PX = 3000 spans a full Letter/A4 page (~10in of printable width) at
-// roughly 300 ppi. Photographic images are already indistinguishable at 300 ppi
-// on a 600 dpi printer — the printer dithers finer detail than a photo actually
-// carries — so prints stay crisp while the byte count drops by an order of
-// magnitude. Images placed in a column or half-page (the common case) end up at
-// 600+ ppi, comfortably matching the printer's full resolution.
-const MAX_EDGE_PX = 3000;
-const JPEG_QUALITY = 0.82;
+// MAX_EDGE_PX = 2000 gives 420+ ppi for a full-width booklet image (at most
+// ~4.75in on its long edge) and ~270 ppi for the widest panorama on a full
+// Letter page. A 600 dpi printer can't show photographic detail beyond that.
+export const MAX_EDGE_PX = 2000;
+export const JPEG_QUALITY = 0.8;
 
-function canvasToBlob(
-  canvas: HTMLCanvasElement,
-  quality: number,
-): Promise<Blob | null> {
-  return new Promise((resolve) => {
-    canvas.toBlob((b) => resolve(b), 'image/jpeg', quality);
-  });
+/** A rectangle in source pixels, measured on the EXIF-oriented image. */
+export interface CropRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/** A blob that already meets the print policy; the image store holds only these. */
+export type PrintBlob = Blob & { readonly __print: unique symbol };
+
+/** Trust bytes that were optimized before, e.g. a manifest entry marked `optimized`. */
+export const asPrintBlob = (blob: Blob) => blob as PrintBlob;
+
+async function decode(blob: Blob): Promise<ImageBitmap> {
+  // 'from-image' bakes in EXIF orientation so rotated phone photos stay
+  // upright once we drop the metadata on re-encode.
+  if (blob.type !== 'image/svg+xml')
+    return createImageBitmap(blob, { imageOrientation: 'from-image' });
+  // Chromium's createImageBitmap rejects SVG blobs; an <img> rasterizes them.
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    return await createImageBitmap(img);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 /**
- * Return a print-optimized version of an image blob: capped to MAX_EDGE_PX on
- * its longest side and re-encoded as JPEG. If the image is already small and
- * already a JPEG (so re-encoding would only shed quality), or if optimizing
- * fails or wouldn't shrink it, the original blob is returned unchanged.
+ * Crop (if given), cap the long edge at MAX_EDGE_PX, flatten onto white, and
+ * encode as JPEG. Without a crop the input is kept unless the output is under
+ * 90% of its size, so a second pass over an encoded image is a no-op.
  */
-export async function downscaleForPrint(blob: Blob): Promise<Blob> {
-  // Vector art and non-images have no pixel resolution to reduce.
-  if (!blob.type.startsWith('image/') || blob.type === 'image/svg+xml') {
-    return blob;
-  }
+export async function encodeForPrint(
+  blob: Blob,
+  crop?: CropRect,
+): Promise<PrintBlob> {
+  const isRaster =
+    blob.type.startsWith('image/') && blob.type !== 'image/svg+xml';
+  if (!crop && !isRaster) return asPrintBlob(blob);
 
   let bitmap: ImageBitmap;
   try {
-    // 'from-image' bakes in EXIF orientation so rotated phone photos stay
-    // upright once we drop the metadata on re-encode.
-    bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
+    bitmap = await decode(blob);
   } catch {
-    return blob; // undecodable in this browser — leave it untouched
+    return asPrintBlob(blob); // undecodable in this browser; leave it untouched
   }
 
   try {
-    const { width, height } = bitmap;
-    const longest = Math.max(width, height);
-    const scale = longest > MAX_EDGE_PX ? MAX_EDGE_PX / longest : 1;
-
-    // Already within budget and already JPEG: recompressing would only degrade
-    // it (and repeated passes would compound), so keep the original bytes.
-    if (scale === 1 && blob.type === 'image/jpeg') return blob;
-
-    const w = Math.max(1, Math.round(width * scale));
-    const h = Math.max(1, Math.round(height * scale));
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return blob;
-
+    const src = crop ?? {
+      x: 0,
+      y: 0,
+      width: bitmap.width,
+      height: bitmap.height,
+    };
+    const scale = Math.min(1, MAX_EDGE_PX / Math.max(src.width, src.height));
+    const w = Math.max(1, Math.round(src.width * scale));
+    const h = Math.max(1, Math.round(src.height * scale));
+    const canvas = new OffscreenCanvas(w, h);
+    const ctx = canvas.getContext('2d')!;
     ctx.imageSmoothingQuality = 'high';
-    // JPEG has no alpha, so flatten transparency onto white first — the page is
-    // white paper, and without this transparent pixels would encode as black.
+    // JPEG has no alpha; without this, transparent pixels encode as black.
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(bitmap, 0, 0, w, h);
-
-    const out = await canvasToBlob(canvas, JPEG_QUALITY);
-    // Never inflate an already-lean image (e.g. a small optimized PNG).
-    return out && out.size < blob.size ? out : blob;
+    ctx.drawImage(bitmap, src.x, src.y, src.width, src.height, 0, 0, w, h);
+    const out = await canvas.convertToBlob({
+      type: 'image/jpeg',
+      quality: JPEG_QUALITY,
+    });
+    return asPrintBlob(crop || out.size < blob.size * 0.9 ? out : blob);
   } finally {
     bitmap.close();
   }

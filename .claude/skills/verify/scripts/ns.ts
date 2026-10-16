@@ -284,6 +284,66 @@ async function serve(run: string): Promise<void> {
       await chooser.setFiles(files.map((f) => path.resolve(f)));
       return `uploaded ${files.join(', ')}`;
     },
+    // CDP drags go through Chromium's own drag pipeline, so the page gets
+    // trusted events carrying real host files, as from a Finder drag that has
+    // entered the window. A synthetic DataTransfer would not be trusted.
+    drop: async (a) => {
+      const files = (str(a, 'file') ?? '').split(',').filter(Boolean);
+      if (!files.length) throw new Error('drop needs --file <path[,path]>');
+      const target = locate(page, a);
+      await target.scrollIntoViewIfNeeded({ timeout: 10_000 });
+      const box = await target.boundingBox();
+      if (!box) throw new Error('drop target is not visible');
+      // Center of the part of the target inside the viewport.
+      const vw = st.viewport.width;
+      const vh = st.viewport.height;
+      const x = (Math.max(box.x, 0) + Math.min(box.x + box.width, vw)) / 2;
+      const y = (Math.max(box.y, 0) + Math.min(box.y + box.height, vh)) / 2;
+      const data = {
+        items: [],
+        files: files.map((f) => path.resolve(f)),
+        dragOperationsMask: 1,
+      };
+      const cdp = await ctx.newCDPSession(page);
+      const hoverShot = str(a, 'shot');
+      try {
+        for (const type of ['dragEnter', 'dragOver'] as const)
+          await cdp.send('Input.dispatchDragEvent', { type, x, y, data });
+        if (hoverShot) await page.screenshot({ path: ev(`${hoverShot}.png`) });
+        await cdp.send('Input.dispatchDragEvent', { type: 'drop', x, y, data });
+      } finally {
+        await cdp.detach();
+      }
+      await Bun.sleep(300);
+      return { dropped: files, at: { x, y }, url: page.url() };
+    },
+    drag: async (a) => {
+      const box = await locate(page, a).boundingBox({ timeout: 10_000 });
+      if (!box) throw new Error('drag target is not visible');
+      const x = box.x + box.width / 2;
+      const y = box.y + box.height / 2;
+      const dx = Number(str(a, 'dx') ?? 0);
+      const dy = Number(str(a, 'dy') ?? 0);
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + dx, y + dy, { steps: 10 });
+      await page.mouse.up();
+      return { from: { x, y }, to: { x: x + dx, y: y + dy } };
+    },
+    'cache-ls': async (a) =>
+      page.evaluate(
+        async (match) => {
+          const out: string[] = [];
+          for (const name of await caches.keys()) {
+            const cache = await caches.open(name);
+            for (const req of await cache.keys())
+              if (!match || req.url.includes(match))
+                out.push(`${name} ${req.url}`);
+          }
+          return out;
+        },
+        str(a, 'match') ?? '',
+      ),
     download: async (a) => {
       const keys = str(a, 'press');
       const [dl] = await Promise.all([

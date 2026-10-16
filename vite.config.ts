@@ -86,6 +86,9 @@ export default defineConfig({
       workbox: {
         // Cache all app assets including fonts, textures, cursors, sounds
         globPatterns: ['**/*.{js,css,html,png,webp,svg,woff,woff2,otf,mp3}'],
+        // The lazy HEIC decoder chunk (libheif compiled to wasm) is ~3.2 MB and
+        // must be precached so iPhone photos import offline.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
     }),
   ],

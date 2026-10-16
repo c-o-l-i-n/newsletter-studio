@@ -53,6 +53,7 @@ import {
 } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useMuted } from '@/hooks/use-sound';
+import { useFileDrop, useWindowDropGuard } from '@/hooks/use-file-drop';
 import { sound } from '@/services/sound';
 
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
@@ -83,6 +84,7 @@ export interface EditorUIProps {
   onPublication: (patch: Partial<Publication>) => void;
   onSettings: (patch: Partial<NewsletterSettings>) => void;
   onAdd: (type: BlockType) => void;
+  onDropImages: (files: File[]) => void;
   onUpdate: (id: string, patch: BlockPatch) => void;
   onRemove: (id: string) => void;
   onMove: (id: string, dir: -1 | 1) => void;
@@ -115,6 +117,7 @@ export function EditorUI({
   onPublication,
   onSettings,
   onAdd,
+  onDropImages,
   onUpdate,
   onRemove,
   onMove,
@@ -124,6 +127,8 @@ export function EditorUI({
   imageRevision,
 }: EditorUIProps) {
   const [showPrintDialog, setShowPrintDialog] = useState(false);
+  useWindowDropGuard();
+  const drop = useFileDrop(onDropImages);
 
   // A clang when a save goes wrong.
   const prevSaveRef = useRef(saveState);
@@ -147,7 +152,10 @@ export function EditorUI({
   }, []);
 
   return (
-    <div className="bg-background flex h-screen flex-col">
+    <div
+      className="bg-background relative flex h-screen flex-col"
+      {...drop.props}
+    >
       {/* ── Header ───────────────────────────────────────────────── */}
       <header className="titlebar no-print tex-leather flex shrink-0 items-center gap-0.5 border-b border-[oklch(0.46_0.07_70)] pr-3 shadow-[0_3px_10px_oklch(0_0_0_/_0.55)]">
         {/* File ops */}
@@ -322,6 +330,17 @@ export function EditorUI({
           />
         </div>
       </div>
+
+      {drop.over && (
+        <div
+          data-drop-active
+          className="border-primary bg-primary/10 pointer-events-none absolute inset-2 z-40 flex items-center justify-center rounded-[var(--radius)] border-2 border-dashed"
+        >
+          <p className="tex-wood font-heading text-primary rounded-[var(--radius)] border border-[oklch(0.58_0.1_76)] px-4 py-2 text-lg shadow-[0_6px_20px_oklch(0_0_0_/_0.5)]">
+            Drop to add a new Image Set
+          </p>
+        </div>
+      )}
 
       <ConfirmDialog
         pendingAction={pendingAction}

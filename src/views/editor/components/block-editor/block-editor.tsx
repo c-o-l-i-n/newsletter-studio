@@ -3,21 +3,31 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   BombIcon,
+  CropIcon,
   QuillScrollIcon,
 } from '@/components/icons';
-import type {
-  AdviceBlock,
-  Block,
-  BlockPatch,
-  BlockType,
-  ImageBorder,
-  ImageSetBlock,
-  Newsletter,
-  Publication,
+import {
+  imagesPatch,
+  type AdviceBlock,
+  type Block,
+  type BlockPatch,
+  type BlockType,
+  type ImageBorder,
+  type ImageSetBlock,
+  type Newsletter,
+  type Publication,
 } from '@/types';
 import { BLOCK_LABELS } from '@/constants';
-import { newId } from '@/utils/ids.ts';
-import { imageUrl, putImageOptimized } from '@/services/image-store.ts';
+import { makeImageItem } from '@/utils/make-block.ts';
+import { imageUrl } from '@/services/image-store.ts';
+import {
+  importImages,
+  isImageFile,
+  pickImageFiles,
+  recropImage,
+} from '@/services/image-import.ts';
+import { useFileDrop } from '@/hooks/use-file-drop';
+import { cn } from '@/lib/utils';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -47,17 +57,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-function pickImageFile(cb: (file: File) => void) {
-  const i = document.createElement('input');
-  i.type = 'file';
-  i.accept = 'image/*';
-  i.onchange = () => {
-    const f = i.files?.[0];
-    if (f) cb(f);
-  };
-  i.click();
-}
 
 const fieldLabel =
   'flex-col items-start gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground';
@@ -210,8 +209,17 @@ function BlockCard({
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
   const [pendingRemove, setPendingRemove] = useState(false);
+  const drop = useFileDrop((files) => {
+    if (block.type === 'imageset')
+      void appendImageFiles(block, files, onUpdate);
+  });
   return (
-    <Card size="sm" className="anim-wobble-in">
+    <Card
+      size="sm"
+      className={cn('anim-wobble-in', drop.over && dropHighlight)}
+      data-drop-active={drop.over || undefined}
+      {...(block.type === 'imageset' ? drop.props : {})}
+    >
       <CardHeader className="border-border items-center border-b">
         <CardTitle className="text-muted-foreground font-semibold tracking-widest uppercase">
           {BLOCK_LABELS[block.type]}
@@ -437,6 +445,22 @@ function AdviceFields({
   );
 }
 
+const dropHighlight =
+  'ring-primary ring-offset-background ring-2 ring-offset-2 brightness-110';
+
+async function appendImageFiles(
+  block: ImageSetBlock,
+  files: File[],
+  onUpdate: (id: string, patch: BlockPatch) => void,
+) {
+  const ids = await importImages(files);
+  if (ids.length)
+    onUpdate(
+      block.id,
+      imagesPatch(block, [...block.images, ...ids.map(makeImageItem)]),
+    );
+}
+
 const BORDER_LABELS: Record<ImageBorder, string> = {
   none: 'No border',
   single: 'Single border',
@@ -455,7 +479,7 @@ function ImageSetFields({
 }) {
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const setImages = (images: ImageSetBlock['images']) =>
-    onUpdate(block.id, { images });
+    onUpdate(block.id, imagesPatch(block, images));
   const updateImage = (
     id: string,
     patch: Partial<ImageSetBlock['images'][number]>,
@@ -463,6 +487,14 @@ function ImageSetFields({
     setImages(
       block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)),
     );
+  const replaceFile = async (id: string, file: File) => {
+    const [imageId] = await importImages([file]);
+    if (imageId) updateImage(id, { imageId });
+  };
+  const recrop = async (id: string, imageId: string) => {
+    const next = await recropImage(imageId);
+    if (next) updateImage(id, { imageId: next });
+  };
   const moveImage = (id: string, dir: -1 | 1) => {
     const i = block.images.findIndex((img) => img.id === id);
     const j = i + dir;
@@ -503,32 +535,13 @@ function ImageSetFields({
         </div>
       )}
       {block.images.map((img, idx) => {
-        const url = imageUrl(img.imageId);
         return (
           <div key={img.id} className="bg-muted/50 flex gap-2 rounded-lg p-2">
-            {/* Thumbnail — click to replace */}
-            <button
-              type="button"
-              title={url ? 'Click to replace image' : 'Click to add image'}
-              className="border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80"
-              onClick={() =>
-                pickImageFile(async (file) =>
-                  updateImage(img.id, {
-                    imageId: await putImageOptimized(file),
-                  }),
-                )
-              }
-            >
-              {url ? (
-                <img
-                  src={url}
-                  alt=""
-                  className={`h-full w-full object-cover${colorImages ? '' : 'grayscale'}`}
-                />
-              ) : (
-                <span>add</span>
-              )}
-            </button>
+            <ImageThumb
+              url={imageUrl(img.imageId)}
+              colorImages={colorImages}
+              onFile={(file) => replaceFile(img.id, file)}
+            />
 
             {/* Caption + border + remove */}
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -560,10 +573,25 @@ function ImageSetFields({
                     ))}
                   </SelectContent>
                 </Select>
+                {img.imageId && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Crop image"
+                    title="Crop image"
+                    className="text-muted-foreground ml-auto size-6"
+                    onClick={() => recrop(img.id, img.imageId!)}
+                  >
+                    <CropIcon size={13} />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive ml-auto size-6"
+                  className={cn(
+                    'text-muted-foreground hover:bg-destructive/20 hover:text-destructive size-6',
+                    !img.imageId && 'ml-auto',
+                  )}
                   onClick={() => setPendingRemoveId(img.id)}
                 >
                   <BombIcon size={13} />
@@ -601,17 +629,11 @@ function ImageSetFields({
         size="sm"
         sfx="add"
         className="self-start text-[11px]"
-        onClick={() =>
-          pickImageFile(async (file) =>
-            setImages([
-              ...block.images,
-              {
-                id: newId('img'),
-                imageId: await putImageOptimized(file),
-                caption: '',
-                border: 'single',
-              },
-            ]),
+        onClick={async () =>
+          appendImageFiles(
+            block,
+            await pickImageFiles({ multiple: true }),
+            onUpdate,
           )
         }
       >
@@ -652,5 +674,50 @@ function ImageSetFields({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+/** Click to replace the image, or drop a file on it. */
+function ImageThumb({
+  url,
+  colorImages,
+  onFile,
+}: {
+  url: string | undefined;
+  colorImages: boolean;
+  onFile: (file: File) => void;
+}) {
+  const drop = useFileDrop((files) => {
+    const file = files.find(isImageFile);
+    if (file) onFile(file);
+  });
+  return (
+    <button
+      type="button"
+      title={url ? 'Click to replace image' : 'Click to add image'}
+      className={cn(
+        'border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80',
+        drop.over && dropHighlight,
+      )}
+      data-drop-active={drop.over || undefined}
+      {...drop.props}
+      onClick={async () => {
+        const [file] = await pickImageFiles({ multiple: false });
+        if (file) onFile(file);
+      }}
+    >
+      {url ? (
+        <img
+          src={url}
+          alt=""
+          className={cn(
+            'h-full w-full object-cover',
+            !colorImages && 'grayscale',
+          )}
+        />
+      ) : (
+        <span>add</span>
+      )}
+    </button>
   );
 }

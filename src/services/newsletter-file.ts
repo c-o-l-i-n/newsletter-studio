@@ -1,6 +1,6 @@
 // Serialize a Newsletter to / from the .newsletter container: a zip holding
 // manifest.json (publication + blocks, with imageId references) plus the
-// original image bytes under images/. See docs/adr/0003-file-format.md.
+// print-optimized image bytes under images/. See docs/adr/0003-file-format.md.
 
 import JSZip from 'jszip';
 import type {
@@ -18,6 +18,7 @@ import {
   imageBlob,
   putImageWithId,
 } from './image-store';
+import { asPrintBlob, encodeForPrint } from './image-optimize';
 
 const FORMAT_VERSION = 1;
 
@@ -25,6 +26,8 @@ interface ImageEntry {
   id: string;
   path: string;
   mime: string;
+  /** Bytes already meet the print policy. Files from older versions lack it. */
+  optimized?: true;
 }
 interface Manifest {
   formatVersion: number;
@@ -113,7 +116,12 @@ export async function newsletterToZipBlob(nl: Newsletter): Promise<Blob> {
     const ext = extForMime(blob.type);
     const filename = `${id}.${ext}`;
     folder.file(filename, blob);
-    images.push({ id, path: `images/${filename}`, mime: blob.type });
+    images.push({
+      id,
+      path: `images/${filename}`,
+      mime: blob.type,
+      optimized: true,
+    });
   }
 
   const manifest: Manifest = {
@@ -145,6 +153,7 @@ export async function zipBlobToNewsletter(blob: Blob): Promise<Newsletter> {
     );
 
   clearImages();
+  // Sequential on purpose: each decode holds a full-size bitmap in memory.
   for (const img of manifest.images ?? []) {
     const f = zip.file(img.path);
     if (!f) continue;
@@ -152,7 +161,10 @@ export async function zipBlobToNewsletter(blob: Blob): Promise<Newsletter> {
     const typed = raw.type
       ? raw
       : new Blob([await raw.arrayBuffer()], { type: img.mime });
-    putImageWithId(img.id, typed);
+    putImageWithId(
+      img.id,
+      img.optimized ? asPrintBlob(typed) : await encodeForPrint(typed),
+    );
   }
 
   return {
