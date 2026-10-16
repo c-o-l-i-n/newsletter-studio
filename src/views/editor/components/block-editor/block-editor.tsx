@@ -6,15 +6,16 @@ import {
   CropIcon,
   QuillScrollIcon,
 } from '@/components/icons';
-import type {
-  AdviceBlock,
-  Block,
-  BlockPatch,
-  BlockType,
-  ImageBorder,
-  ImageSetBlock,
-  Newsletter,
-  Publication,
+import {
+  imagesPatch,
+  type AdviceBlock,
+  type Block,
+  type BlockPatch,
+  type BlockType,
+  type ImageBorder,
+  type ImageSetBlock,
+  type Newsletter,
+  type Publication,
 } from '@/types';
 import { BLOCK_LABELS } from '@/constants';
 import { makeImageItem } from '@/utils/make-block.ts';
@@ -454,9 +455,10 @@ async function appendImageFiles(
 ) {
   const ids = await importImages(files);
   if (ids.length)
-    onUpdate(block.id, {
-      images: [...block.images, ...ids.map(makeImageItem)],
-    });
+    onUpdate(
+      block.id,
+      imagesPatch(block, [...block.images, ...ids.map(makeImageItem)]),
+    );
 }
 
 const BORDER_LABELS: Record<ImageBorder, string> = {
@@ -477,7 +479,7 @@ function ImageSetFields({
 }) {
   const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
   const setImages = (images: ImageSetBlock['images']) =>
-    onUpdate(block.id, { images });
+    onUpdate(block.id, imagesPatch(block, images));
   const updateImage = (
     id: string,
     patch: Partial<ImageSetBlock['images'][number]>,

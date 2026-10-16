@@ -1,4 +1,10 @@
-import type { Block, BlockType, ImageItem, ImageSetBlock } from '@/types';
+import {
+  imagesPatch,
+  type Block,
+  type BlockType,
+  type ImageItem,
+  type ImageSetBlock,
+} from '@/types';
 import { newId } from './ids';
 import { emptyDoc } from './tiptap';
 
@@ -20,12 +26,13 @@ export function makeBlock(type: BlockType): Block {
 }
 
 export function makeImageSet(imageIds: string[]): ImageSetBlock {
-  return {
+  const empty: ImageSetBlock = {
     id: newId(),
     type: 'imageset',
-    images: imageIds.map(makeImageItem),
+    images: [],
     columns: 1,
   };
+  return { ...empty, ...imagesPatch(empty, imageIds.map(makeImageItem)) };
 }
 
 export function makeImageItem(imageId: string): ImageItem {
