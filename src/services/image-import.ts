@@ -1,8 +1,9 @@
 // The only path from a file the author picked or dropped to an image id:
-// decode HEIC if needed, encode for print, store.
+// decode HEIC if needed, let the author crop, encode for print, store.
 
+import { requestCrop } from '@/components/crop-dialog';
 import { encodeForPrint } from './image-optimize';
-import { putImage } from './image-store';
+import { imageBlob, putImage } from './image-store';
 
 export const IMAGE_ACCEPT = 'image/*,.heic,.heif';
 
@@ -29,9 +30,15 @@ async function toDecodable(file: File): Promise<Blob> {
   }
 }
 
-async function importImage(file: File): Promise<string | null> {
+async function importImage(
+  file: File,
+  progress: { index: number; total: number },
+): Promise<string | null> {
   try {
-    return putImage(await encodeForPrint(await toDecodable(file)));
+    const blob = await toDecodable(file);
+    const outcome = await requestCrop(blob, progress);
+    if (outcome.type === 'skip') return null;
+    return putImage(await encodeForPrint(blob, outcome.crop));
   } catch (e) {
     console.error(e);
     alert(`Could not add ${file.name}: ${(e as Error).message ?? e}`);
@@ -41,21 +48,41 @@ async function importImage(file: File): Promise<string | null> {
 
 let queue: Promise<unknown> = Promise.resolve();
 
+/** Run jobs one at a time, so two imports never share the crop dialog. */
+function enqueue<T>(job: () => Promise<T>): Promise<T> {
+  const run = queue.then(job);
+  queue = run.catch(() => {});
+  return run;
+}
+
 /**
- * Import files one at a time, in order. Non-image files and images that fail
- * or are cancelled are left out of the result. Overlapping calls wait their turn.
+ * Import files in order, each through the crop dialog. Non-image files, and
+ * images that fail or that the author skips, are left out of the result.
  */
 export function importImages(files: File[]): Promise<string[]> {
-  const run = queue.then(async () => {
+  return enqueue(async () => {
+    const images = files.filter(isImageFile);
     const ids: string[] = [];
-    for (const file of files.filter(isImageFile)) {
-      const id = await importImage(file);
+    for (const [i, file] of images.entries()) {
+      const id = await importImage(file, {
+        index: i + 1,
+        total: images.length,
+      });
       if (id) ids.push(id);
     }
     return ids;
   });
-  queue = run.catch(() => {});
-  return run;
+}
+
+/** Crop a stored image again. Resolves to the new image id, or null if unchanged. */
+export function recropImage(imageId: string): Promise<string | null> {
+  return enqueue(async () => {
+    const blob = imageBlob(imageId);
+    if (!blob) return null;
+    const outcome = await requestCrop(blob);
+    if (outcome.type === 'skip' || !outcome.crop) return null;
+    return putImage(await encodeForPrint(blob, outcome.crop));
+  });
 }
 
 /** Open the OS file chooser for images. Resolves to [] if the author cancels. */

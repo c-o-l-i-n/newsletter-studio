@@ -3,6 +3,7 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   BombIcon,
+  CropIcon,
   QuillScrollIcon,
 } from '@/components/icons';
 import type {
@@ -18,7 +19,11 @@ import type {
 import { BLOCK_LABELS } from '@/constants';
 import { makeImageItem } from '@/utils/make-block.ts';
 import { imageUrl } from '@/services/image-store.ts';
-import { importImages, pickImageFiles } from '@/services/image-import.ts';
+import {
+  importImages,
+  pickImageFiles,
+  recropImage,
+} from '@/services/image-import.ts';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -461,6 +466,10 @@ function ImageSetFields({
     const [imageId] = await importImages([file]);
     if (imageId) updateImage(id, { imageId });
   };
+  const recrop = async (id: string, imageId: string) => {
+    const next = await recropImage(imageId);
+    if (next) updateImage(id, { imageId: next });
+  };
   const moveImage = (id: string, dir: -1 | 1) => {
     const i = block.images.findIndex((img) => img.id === id);
     const j = i + dir;
@@ -555,10 +564,22 @@ function ImageSetFields({
                     ))}
                   </SelectContent>
                 </Select>
+                {img.imageId && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Crop image"
+                    title="Crop image"
+                    className="text-muted-foreground ml-auto size-6"
+                    onClick={() => recrop(img.id, img.imageId!)}
+                  >
+                    <CropIcon size={13} />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className="text-muted-foreground hover:bg-destructive/20 hover:text-destructive ml-auto size-6"
+                  className={`text-muted-foreground hover:bg-destructive/20 hover:text-destructive size-6${img.imageId ? '' : 'ml-auto'}`}
                   onClick={() => setPendingRemoveId(img.id)}
                 >
                   <BombIcon size={13} />

@@ -28,6 +28,7 @@ export {
   ChevronDown as ChevronDownIcon,
   ChevronUp as ChevronUpIcon,
   X as CloseIcon,
+  Crop as CropIcon,
 } from 'lucide-react';
 
 // A small filled status dot (saved / unsaved indicators).
