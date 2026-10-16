@@ -138,17 +138,22 @@ function CropBody({
     });
   const skipLabel = req.total > 1 ? 'Skip' : 'Cancel';
 
+  // On the window, not the dialog: between batch images the dialog content
+  // remounts and focus falls back to <body>.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const onSkip = (e.target as HTMLElement).dataset?.skip !== undefined;
+      if (e.key === 'Enter' && size && !onSkip) {
+        e.preventDefault();
+        place();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
   return (
-    <div
-      className="contents"
-      onKeyDown={(e) => {
-        const onSkip = (e.target as HTMLElement).dataset.skip !== undefined;
-        if (e.key === 'Enter' && size && !onSkip) {
-          e.preventDefault();
-          place();
-        }
-      }}
-    >
+    <>
       <DialogHeader>
         <DialogTitle>Crop the Picture</DialogTitle>
         <DialogDescription>
@@ -226,6 +231,6 @@ function CropBody({
           Done
         </Button>
       </DialogFooter>
-    </div>
+    </>
   );
 }
