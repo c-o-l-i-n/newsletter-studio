@@ -21,9 +21,12 @@ import { makeImageItem } from '@/utils/make-block.ts';
 import { imageUrl } from '@/services/image-store.ts';
 import {
   importImages,
+  isImageFile,
   pickImageFiles,
   recropImage,
 } from '@/services/image-import.ts';
+import { useFileDrop } from '@/hooks/use-file-drop';
+import { cn } from '@/lib/utils';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -205,8 +208,17 @@ function BlockCard({
   onMove: (id: string, dir: -1 | 1) => void;
 }) {
   const [pendingRemove, setPendingRemove] = useState(false);
+  const drop = useFileDrop((files) => {
+    if (block.type === 'imageset')
+      void appendImageFiles(block, files, onUpdate);
+  });
   return (
-    <Card size="sm" className="anim-wobble-in">
+    <Card
+      size="sm"
+      className={cn('anim-wobble-in', drop.over && dropHighlight)}
+      data-drop-active={drop.over || undefined}
+      {...(block.type === 'imageset' ? drop.props : {})}
+    >
       <CardHeader className="border-border items-center border-b">
         <CardTitle className="text-muted-foreground font-semibold tracking-widest uppercase">
           {BLOCK_LABELS[block.type]}
@@ -432,6 +444,21 @@ function AdviceFields({
   );
 }
 
+const dropHighlight =
+  'ring-primary ring-offset-background ring-2 ring-offset-2 brightness-110';
+
+async function appendImageFiles(
+  block: ImageSetBlock,
+  files: File[],
+  onUpdate: (id: string, patch: BlockPatch) => void,
+) {
+  const ids = await importImages(files);
+  if (ids.length)
+    onUpdate(block.id, {
+      images: [...block.images, ...ids.map(makeImageItem)],
+    });
+}
+
 const BORDER_LABELS: Record<ImageBorder, string> = {
   none: 'No border',
   single: 'Single border',
@@ -458,10 +485,6 @@ function ImageSetFields({
     setImages(
       block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)),
     );
-  const appendFiles = async (files: File[]) => {
-    const ids = await importImages(files);
-    if (ids.length) setImages([...block.images, ...ids.map(makeImageItem)]);
-  };
   const replaceFile = async (id: string, file: File) => {
     const [imageId] = await importImages([file]);
     if (imageId) updateImage(id, { imageId });
@@ -510,29 +533,13 @@ function ImageSetFields({
         </div>
       )}
       {block.images.map((img, idx) => {
-        const url = imageUrl(img.imageId);
         return (
           <div key={img.id} className="bg-muted/50 flex gap-2 rounded-lg p-2">
-            {/* Thumbnail — click to replace */}
-            <button
-              type="button"
-              title={url ? 'Click to replace image' : 'Click to add image'}
-              className="border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80"
-              onClick={async () => {
-                const [file] = await pickImageFiles({ multiple: false });
-                if (file) void replaceFile(img.id, file);
-              }}
-            >
-              {url ? (
-                <img
-                  src={url}
-                  alt=""
-                  className={`h-full w-full object-cover${colorImages ? '' : 'grayscale'}`}
-                />
-              ) : (
-                <span>add</span>
-              )}
-            </button>
+            <ImageThumb
+              url={imageUrl(img.imageId)}
+              colorImages={colorImages}
+              onFile={(file) => replaceFile(img.id, file)}
+            />
 
             {/* Caption + border + remove */}
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -618,7 +625,11 @@ function ImageSetFields({
         sfx="add"
         className="self-start text-[11px]"
         onClick={async () =>
-          appendFiles(await pickImageFiles({ multiple: true }))
+          appendImageFiles(
+            block,
+            await pickImageFiles({ multiple: true }),
+            onUpdate,
+          )
         }
       >
         + Add image
@@ -658,5 +669,47 @@ function ImageSetFields({
         </AlertDialogContent>
       </AlertDialog>
     </>
+  );
+}
+
+/** Click to replace the image, or drop a file on it. */
+function ImageThumb({
+  url,
+  colorImages,
+  onFile,
+}: {
+  url: string | undefined;
+  colorImages: boolean;
+  onFile: (file: File) => void;
+}) {
+  const drop = useFileDrop((files) => {
+    const file = files.find(isImageFile);
+    if (file) onFile(file);
+  });
+  return (
+    <button
+      type="button"
+      title={url ? 'Click to replace image' : 'Click to add image'}
+      className={cn(
+        'border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80',
+        drop.over && dropHighlight,
+      )}
+      data-drop-active={drop.over || undefined}
+      {...drop.props}
+      onClick={async () => {
+        const [file] = await pickImageFiles({ multiple: false });
+        if (file) onFile(file);
+      }}
+    >
+      {url ? (
+        <img
+          src={url}
+          alt=""
+          className={`h-full w-full object-cover${colorImages ? '' : 'grayscale'}`}
+        />
+      ) : (
+        <span>add</span>
+      )}
+    </button>
   );
 }
