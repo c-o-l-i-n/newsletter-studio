@@ -16,9 +16,9 @@ import type {
   Publication,
 } from '@/types';
 import { BLOCK_LABELS } from '@/constants';
-import { newId } from '@/utils/ids.ts';
-import { imageUrl, putImage } from '@/services/image-store.ts';
-import { encodeForPrint } from '@/services/image-optimize.ts';
+import { makeImageItem } from '@/utils/make-block.ts';
+import { imageUrl } from '@/services/image-store.ts';
+import { importImages, pickImageFiles } from '@/services/image-import.ts';
 import { boomAt } from '@/services/boom';
 import { ArticleBody } from '../article-body';
 import { Button } from '@/components/ui/button';
@@ -48,17 +48,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-function pickImageFile(cb: (file: File) => void) {
-  const i = document.createElement('input');
-  i.type = 'file';
-  i.accept = 'image/*';
-  i.onchange = () => {
-    const f = i.files?.[0];
-    if (f) cb(f);
-  };
-  i.click();
-}
 
 const fieldLabel =
   'flex-col items-start gap-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground';
@@ -464,6 +453,14 @@ function ImageSetFields({
     setImages(
       block.images.map((img) => (img.id === id ? { ...img, ...patch } : img)),
     );
+  const appendFiles = async (files: File[]) => {
+    const ids = await importImages(files);
+    if (ids.length) setImages([...block.images, ...ids.map(makeImageItem)]);
+  };
+  const replaceFile = async (id: string, file: File) => {
+    const [imageId] = await importImages([file]);
+    if (imageId) updateImage(id, { imageId });
+  };
   const moveImage = (id: string, dir: -1 | 1) => {
     const i = block.images.findIndex((img) => img.id === id);
     const j = i + dir;
@@ -512,13 +509,10 @@ function ImageSetFields({
               type="button"
               title={url ? 'Click to replace image' : 'Click to add image'}
               className="border-border text-muted-foreground flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-dashed text-[10px] hover:opacity-80"
-              onClick={() =>
-                pickImageFile(async (file) =>
-                  updateImage(img.id, {
-                    imageId: putImage(await encodeForPrint(file)),
-                  }),
-                )
-              }
+              onClick={async () => {
+                const [file] = await pickImageFiles({ multiple: false });
+                if (file) void replaceFile(img.id, file);
+              }}
             >
               {url ? (
                 <img
@@ -602,18 +596,8 @@ function ImageSetFields({
         size="sm"
         sfx="add"
         className="self-start text-[11px]"
-        onClick={() =>
-          pickImageFile(async (file) =>
-            setImages([
-              ...block.images,
-              {
-                id: newId('img'),
-                imageId: putImage(await encodeForPrint(file)),
-                caption: '',
-                border: 'single',
-              },
-            ]),
-          )
+        onClick={async () =>
+          appendFiles(await pickImageFiles({ multiple: true }))
         }
       >
         + Add image
